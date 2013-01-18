@@ -25,9 +25,7 @@ typedef struct SM_FileHandle {
   int fd;
 } SM_FileHandle;
 
-typedef struct SM_PageHandle {
-  char *data;
-} SM_PageHandle;
+typedef char* SM_PageHandle;
 
 /************************************************************
  *                    interface                             *
@@ -36,6 +34,7 @@ typedef struct SM_PageHandle {
 extern RC createPageFile (char *fileName);
 extern RC openPageFile (char *fileName, SM_FileHandle *fHandle);
 extern RC closePageFile (SM_FileHandle *handle);
+extern RC destroyPageFile (char *fileName);
 
 /* reading blocks from disc */
 extern RC readBlock (int pageNum, SM_FileHandle *fHandle, SM_PageHandle *memPage);

@@ -81,7 +81,7 @@ testSinglePageContent(void)
   SM_PageHandle ph;
   int i;
 
-  ph = malloc(PAGE_SIZE);
+  ph = (SM_PageHandle) malloc(PAGE_SIZE);
 
   // create a new page file
   CHECK_RETURN_RC(createPageFile (TESTPF));
