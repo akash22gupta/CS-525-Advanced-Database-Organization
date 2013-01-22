@@ -14,10 +14,13 @@ char *RC_message = NULL;
 /* management structure for page files */
 static char *buffer = NULL;
 
+#define GET_FD(fHandle) \
+  *((int *) (fHandle->mgmtInfo))
+
 #define CHECK_FD(fd,emessage) \
   do { \
   if (fd < 0 ) { \
-    printf( "Error opening file: %s\n", strerror(errno));	\
+    printf( "Error opening file: %s (%s: %i)\n", strerror(errno),  __FILE__, __LINE__); \
     RC_message = emessage; \
     return RC_FILE_NOT_FOUND; \
   } \
@@ -28,7 +31,7 @@ static char *buffer = NULL;
   int spos; \
   spos = (seek); \
   if (spos < 0 ) { \
-    printf( "Error seeking in file: %s\n", strerror(errno));	\
+    printf( "Error seeking in file: %s (%s: %i)\n", strerror(errno), __FILE__, __LINE__);	\
     return RC_FILE_NOT_FOUND; \
   } \
   } while (0)
@@ -38,7 +41,7 @@ static char *buffer = NULL;
   int bread; \
   bread = (readcmd); \
   if (bread < 0 ) { \
-    printf( "Error seeking in file: %s\n", strerror(errno));	\
+    printf( "Error seeking in file: %s (%s: %i)\n", strerror(errno), __FILE__, __LINE__);	\
     return RC_FILE_NOT_FOUND; \
   } \
   } while (0)
@@ -48,7 +51,7 @@ static char *buffer = NULL;
   int bwrite; \
   bwrite = (writecmd); \
   if (bwrite < 0 ) { \
-    printf( "Error seeking in file: %s\n", strerror(errno));	\
+    printf( "Error seeking in file: %s (%s: %i)\n", strerror(errno), __FILE__, __LINE__);	\
     return RC_FILE_NOT_FOUND; \
   } \
   } while (0)
@@ -80,6 +83,7 @@ createPageFile (char *fileName)
   CHECK_WRITE(write(fd, (void *) buffer, PAGE_SIZE));
 
   // close file
+  sync();
   close(fd);
 
   return RC_OK;
@@ -100,7 +104,8 @@ openPageFile (char *fileName, SM_FileHandle *fHandle)
 
   fHandle->totalNumPages = *((int *) buffer);
   fHandle->curPagePos = 0;
-  fHandle->fd = fd;
+  fHandle->mgmtInfo = malloc(sizeof(int));
+  GET_FD(fHandle) = fd;
 
   printf("opened file successful\n");
 
@@ -113,15 +118,15 @@ closePageFile (SM_FileHandle *fHandle)
   int spos;
 
   // write header
-  CHECK_SEEK(lseek(fHandle->fd, 0, SEEK_SET));
-  CHECK_READ(read(fHandle->fd, (void *) buffer, PAGE_SIZE));
+  CHECK_SEEK(lseek(GET_FD(fHandle), 0, SEEK_SET));
+  CHECK_READ(read(GET_FD(fHandle), (void *) buffer, PAGE_SIZE));
 
   *((int *) buffer) = fHandle->totalNumPages;
-  CHECK_SEEK(lseek(fHandle->fd, 0, SEEK_SET));
-  CHECK_WRITE(write(fHandle->fd, (void *) buffer, PAGE_SIZE));
+  CHECK_SEEK(lseek(GET_FD(fHandle), 0, SEEK_SET));
+  CHECK_WRITE(write(GET_FD(fHandle), (void *) buffer, PAGE_SIZE));
 
-  close(fHandle->fd);
-  CHECK_FD(fHandle->fd, "error closing file");
+  close(GET_FD(fHandle));
+  CHECK_FD(GET_FD(fHandle), "error closing file");
   return RC_OK;
 }
 
@@ -138,10 +143,10 @@ destroyPageFile (char *fileName)
 
 /* reading blocks from disc */
 RC 
-readBlock (int pageNum, SM_FileHandle *fHandle, SM_PageHandle *memPage)
+readBlock (int pageNum, SM_FileHandle *fHandle, SM_PageHandle memPage)
 {
-  CHECK_SEEK(lseek(fHandle->fd, (PAGE_SIZE * (pageNum + 1)) - 1, SEEK_SET));
-  CHECK_READ(read(fHandle->fd, (void *) memPage, PAGE_SIZE));
+  CHECK_SEEK(lseek(GET_FD(fHandle), (PAGE_SIZE * (pageNum + 1)) - 1, SEEK_SET));
+  CHECK_READ(read(GET_FD(fHandle), (void *) memPage, PAGE_SIZE));
   fHandle->curPagePos = pageNum + 1;
 
   return RC_OK;
@@ -154,51 +159,51 @@ getBlockPos (SM_FileHandle *fHandle)
 }
 
 RC
-readFirstBlock (SM_FileHandle *fHandle, SM_PageHandle *memPage)
+readFirstBlock (SM_FileHandle *fHandle, SM_PageHandle memPage)
 {
-  CHECK_SEEK(lseek(fHandle->fd, PAGE_SIZE - 1, SEEK_SET));
-  CHECK_READ(read(fHandle->fd, (void *) *memPage, PAGE_SIZE));
+  CHECK_SEEK(lseek(GET_FD(fHandle), PAGE_SIZE - 1, SEEK_SET));
+  CHECK_READ(read(GET_FD(fHandle), (void *) memPage, PAGE_SIZE));
   fHandle->curPagePos = 1;
   
   return RC_OK;
 }
 
 RC
-readPreviousBlock (SM_FileHandle *fHandle, SM_PageHandle *memPage)
+readPreviousBlock (SM_FileHandle *fHandle, SM_PageHandle memPage)
 {
   if (fHandle->curPagePos == 0)
     return RC_READ_NON_EXISTING_PAGE;
 
-  CHECK_SEEK(lseek(fHandle->fd, -PAGE_SIZE, SEEK_CUR));
-  CHECK_READ(read(fHandle->fd, (void *) *memPage, PAGE_SIZE));
+  CHECK_SEEK(lseek(GET_FD(fHandle), -PAGE_SIZE, SEEK_CUR));
+  CHECK_READ(read(GET_FD(fHandle), (void *) memPage, PAGE_SIZE));
   fHandle->curPagePos--;
 
   return RC_OK;
 }
 
 RC
-readCurrentBlock (SM_FileHandle *fHandle, SM_PageHandle *memPage)
+readCurrentBlock (SM_FileHandle *fHandle, SM_PageHandle memPage)
 {
-  CHECK_READ(read(fHandle->fd, (void *) *memPage, PAGE_SIZE));
+  CHECK_READ(read(GET_FD(fHandle), (void *) memPage, PAGE_SIZE));
   
   return RC_OK;
 }
 
 RC 
-readNextBlock (SM_FileHandle *fHandle, SM_PageHandle *memPage)
+readNextBlock (SM_FileHandle *fHandle, SM_PageHandle memPage)
 {
-  CHECK_SEEK(lseek(fHandle->fd, -PAGE_SIZE, SEEK_CUR));
-  CHECK_READ(read(fHandle->fd, (void *) *memPage, PAGE_SIZE));
+  CHECK_SEEK(lseek(GET_FD(fHandle), -PAGE_SIZE, SEEK_CUR));
+  CHECK_READ(read(GET_FD(fHandle), (void *) memPage, PAGE_SIZE));
   fHandle->curPagePos++;
 
   return RC_OK;
 }
 
 RC 
-readLastBlock (SM_FileHandle *fHandle, SM_PageHandle *memPage)
+readLastBlock (SM_FileHandle *fHandle, SM_PageHandle memPage)
 {
-  CHECK_SEEK(lseek(fHandle->fd, (fHandle->totalNumPages * PAGE_SIZE) -1, SEEK_SET));
-  CHECK_READ(read(fHandle->fd, (void *) *memPage, PAGE_SIZE));
+  CHECK_SEEK(lseek(GET_FD(fHandle), (fHandle->totalNumPages * PAGE_SIZE) -1, SEEK_SET));
+  CHECK_READ(read(GET_FD(fHandle), (void *) memPage, PAGE_SIZE));
   fHandle->curPagePos = fHandle->totalNumPages;
 
   return RC_OK;
@@ -206,19 +211,19 @@ readLastBlock (SM_FileHandle *fHandle, SM_PageHandle *memPage)
 
 /* writing blocks to a page file */
 RC
-writeBlock (int pageNum, SM_FileHandle *fHandle, SM_PageHandle *memPage)
+writeBlock (int pageNum, SM_FileHandle *fHandle, SM_PageHandle memPage)
 {
-  CHECK_SEEK(lseek(fHandle->fd, ((pageNum + 1) * PAGE_SIZE) - 1, SEEK_SET));
-  CHECK_WRITE(write(fHandle->fd, (void *) *memPage, PAGE_SIZE));
+  CHECK_SEEK(lseek(GET_FD(fHandle), ((pageNum + 1) * PAGE_SIZE) - 1, SEEK_SET));
+  CHECK_WRITE(write(GET_FD(fHandle), (void *) memPage, PAGE_SIZE));
   fHandle->curPagePos = pageNum + 1;
 
   return RC_OK;
 }
 
 RC 
-writeCurrentBlock (SM_FileHandle *fHandle, SM_PageHandle *memPage)
+writeCurrentBlock (SM_FileHandle *fHandle, SM_PageHandle memPage)
 {
-  CHECK_WRITE(write(fHandle->fd, (void *) *memPage, PAGE_SIZE));
+  CHECK_WRITE(write(GET_FD(fHandle), (void *) memPage, PAGE_SIZE));
   fHandle->curPagePos++;
 
   return RC_OK;
@@ -227,9 +232,9 @@ writeCurrentBlock (SM_FileHandle *fHandle, SM_PageHandle *memPage)
 RC 
 appendEmptyBlock (SM_FileHandle *fHandle)
 {
-  CHECK_SEEK(lseek(fHandle->fd, ((fHandle->totalNumPages + 1) * PAGE_SIZE) - 1, SEEK_SET));
+  CHECK_SEEK(lseek(GET_FD(fHandle), ((fHandle->totalNumPages + 1) * PAGE_SIZE) - 1, SEEK_SET));
   memset(buffer, 0, PAGE_SIZE);
-  CHECK_WRITE(write(fHandle->fd, (void *) buffer, PAGE_SIZE));
+  CHECK_WRITE(write(GET_FD(fHandle), (void *) buffer, PAGE_SIZE));
   fHandle->curPagePos = ++(fHandle->totalNumPages);
 
   return RC_OK;
