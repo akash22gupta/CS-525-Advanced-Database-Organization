@@ -121,6 +121,7 @@ testSinglePageContent(void)
 
   // read back the page containing the string and check that it is correct
   CHECK_RETURN_RC(readFirstBlock (&fh, ph));
+
   for (i=0; i < PAGE_SIZE; i++)
     FAIL((ph[i] == (i % 10) + '0'), "character in page read from disk not the one we expected.");
   printf("reading first block\n");
