@@ -56,7 +56,7 @@ checkErrorCode (int rc, char *message)
     printf("TEST OK: %s\n", message);
     return;
   }
-  printf("TEST FAILED: %s\n", message);
+  printf("TEST FAILED: %s (%s: %i)\n", message, __FILE__, __LINE__);
   myExit(1);
 }
 
@@ -107,7 +107,7 @@ testSinglePageContent(void)
   printf("created and opened file\n");
   
   // read first page into handle
-  CHECK_RETURN_RC(readFirstBlock (&fh, &ph));
+  CHECK_RETURN_RC(readFirstBlock (&fh, ph));
   // the page should be empty (zero bytes)
   for (i=0; i < PAGE_SIZE; i++)
     FAIL((ph[i] == 0), "expected zero byte in first page of freshly initialized page");
@@ -116,11 +116,11 @@ testSinglePageContent(void)
   // change ph to be a string and write that one to disk
   for (i=0; i < PAGE_SIZE; i++)
     ph[i] = (i % 10) + '0';
-  CHECK_RETURN_RC(writeBlock (0, &fh, &ph));
+  CHECK_RETURN_RC(writeBlock (0, &fh, ph));
   printf("writing first block\n");
 
   // read back the page containing the string and check that it is correct
-  CHECK_RETURN_RC(readFirstBlock (&fh, &ph));
+  CHECK_RETURN_RC(readFirstBlock (&fh, ph));
   for (i=0; i < PAGE_SIZE; i++)
     FAIL((ph[i] == (i % 10) + '0'), "character in page read from disk not the one we expected.");
   printf("reading first block\n");
