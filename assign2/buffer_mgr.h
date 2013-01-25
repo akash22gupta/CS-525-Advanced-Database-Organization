@@ -6,10 +6,11 @@
 
 // Replacement Strategies
 typedef enum ReplacementStrategy {
-  RS_LRU = 0,
-  RS_CLOCK = 1,
-  RS_LFU = 2,
-  RS_LRU_K = 3
+  RS_FIFO = 0,
+  RS_LRU = 1,
+  RS_CLOCK = 2,
+  RS_LFU = 3,
+  RS_LRU_K = 4
 } ReplacementStrategy;
 
 // Data Types and Structures
@@ -43,7 +44,7 @@ RC forceFlushPool(BM_BufferPool *const bm);
 
 // Buffer Manager Interface Access Pages
 RC markDirty (BM_BufferPool *const bm, BM_PageHandle *const page);
-RC UnpinPage (BM_BufferPool *const bm, BM_PageHandle *const page);
+RC unpinPage (BM_BufferPool *const bm, BM_PageHandle *const page);
 RC forcePage (BM_BufferPool *const bm, BM_PageHandle *const page);
 RC pinPage (BM_BufferPool *const bm, BM_PageHandle *const page, const PageNumber pageNum);
 

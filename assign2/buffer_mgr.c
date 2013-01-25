@@ -6,6 +6,9 @@
 
 #define RC_BM_ACCESS_PAGE_NOT_IN_MEM 100
 #define RC_BM_UNPIN_PAGE_NOT_PINNED 101
+#define RC_UNKOWN_REPLACEMENT_STRATEGY 102
+#define RC_STRATEGY_CHOSE_FIXED_PAGE_FOR_REPLACEMENT 103
+#define RC_BM_ALL_PAGES_FIXED 104
 
 typedef char PageData[PAGE_SIZE];
 
@@ -20,7 +23,7 @@ typedef struct PoolData {
   int *frameForPage;
   int *fixCount;
   bool *dirty;
-  ReplacementStrategy strategy;
+  void *stratData;
 } PoolData;
 
 #define CHECK(code)				\
@@ -42,6 +45,35 @@ static RC getFrame(BM_BufferPool *bm, BM_PageHandle *page, PoolData *pd, int *fr
      return rc_internal;			\
   } while (0)
 
+static RC loadPage(BM_BufferPool *bm, int frame, int pageNum);
+
+// internal generic functions for replacement strategies
+static RC initStrategyData (BM_BufferPool *const bm);
+static RC choosePageFrame (BM_BufferPool *const bm, int *frameNum);
+static RC shutdownStrategy (BM_BufferPool *const bm);
+
+// FIFO
+typedef struct IntCell
+{
+  int data;
+  struct IntCell *next;
+} IntCell;
+
+typedef struct IntList
+{
+  IntCell *head;
+  IntCell *tail;
+  int length;
+} IntList;
+
+static IntList *lappend (IntList *list, int value);
+#define NIL (IntList *) NULL
+static IntList *ldelete (IntList *list, int pos);
+#define llength(list) ((list == NIL) ? 0 : list->length)
+
+static RC FIFO_initData (BM_BufferPool *const bm);
+static RC FIFO_chooseNext (BM_BufferPool *const bm, int *frameNum);
+static RC FIFO_shutdown (BM_BufferPool *const bm);
 
 // functions
 RC 
@@ -62,7 +94,6 @@ initBufferPool(BM_BufferPool *const bm , const char *pageFileName, const int num
   pd->frameForPage = (int *) malloc(MAX_NUM_PAGES * sizeof(int));
   pd->fixCount = (int *) malloc(numPages * sizeof(int));
   pd->dirty = (bool *) malloc(numPages * sizeof(bool));
-  pd->strategy = strategy;
 
   for (i = 0; i < numPages; i++)
     {
@@ -81,6 +112,8 @@ initBufferPool(BM_BufferPool *const bm , const char *pageFileName, const int num
   bm->numPages = numPages;
   bm->mgmtData = pd;
 
+  initStrategyData(bm);
+
   return RC_OK;
 }
 
@@ -91,7 +124,11 @@ shutdownBufferPool(BM_BufferPool *const bm)
 
   pd = (PoolData *) bm->mgmtData;
 
-  // close page file
+
+  // clean up bookkeeping info for strategy
+  shutdownStrategy(bm);
+
+  // flush and close page file
   CHECK(forceFlushPool(bm));
   CHECK(closePageFile(pd->file));
   
@@ -120,7 +157,7 @@ forceFlushPool(BM_BufferPool *const bm)
     {
         if (pd->dirty[i] == TRUE)
 	  {
-	    CHECK(writeBlock(i, pd->file, (SM_PageHandle) pd->frames[i]));
+	    CHECK(writeBlock(pd->pageInFrame[i], pd->file, (SM_PageHandle) pd->frames[i]));
 	    pd->dirty[i] = FALSE;
 	  }
     }
@@ -142,7 +179,7 @@ markDirty (BM_BufferPool *const bm, BM_PageHandle *const page)
 }
 
 RC 
-UnpinPage (BM_BufferPool *const bm, BM_PageHandle *const page)
+unpinPage (BM_BufferPool *const bm, BM_PageHandle *const page)
 {
   PoolData *pd;
   int f = 0;
@@ -191,7 +228,56 @@ forcePage (BM_BufferPool *const bm, BM_PageHandle *const page)
 RC 
 pinPage (BM_BufferPool *const bm, BM_PageHandle *const page, const PageNumber pageNum)
 {
+  PoolData *pd;
+  int f = 0;
+  BM_PageHandle *oldPage;
+
+  pd = (PoolData *) bm->mgmtData;  
+  page->pageNum = pageNum;
+
+  if (getFrame(bm,page,pd,&f) == RC_BM_ACCESS_PAGE_NOT_IN_MEM)
+    {
+      CHECK(choosePageFrame(bm, &f));
+      if (pd->fixCount[f] > 0)
+	return RC_STRATEGY_CHOSE_FIXED_PAGE_FOR_REPLACEMENT;
+      
+      // if frame is not empty flush if necessary and set frame for old page to empty
+      if (pd->pageInFrame[f] != NO_PAGE)
+	{
+	  oldPage = (BM_PageHandle *) malloc(sizeof(BM_PageHandle));
+	  oldPage->pageNum = pd->pageInFrame[f];
+	  oldPage->data = pd->frames[f];
+
+	  if (pd->dirty[f])
+	      CHECK(forcePage(bm, oldPage));
+	  pd->frameForPage[oldPage->pageNum] = NO_FRAME;
+	  free(oldPage);
+	}
+      CHECK(loadPage(bm, f, pageNum));
+    }
   
+  pd->fixCount[f]++;
+  page->data = pd->frames[f];
+
+  return RC_OK;
+}
+
+RC 
+loadPage(BM_BufferPool *bm, int frame, int pageNum)
+{
+  PoolData *pd;
+  SM_PageHandle pageData;
+
+  pd = (PoolData *) bm->mgmtData;
+  pageData = (SM_PageHandle) pd->frames[frame];
+
+  CHECK(readBlock(pageNum, pd->file, pageData));
+
+  pd->pageInFrame[frame] = pageNum;
+  pd->frameForPage[pageNum] = frame;
+  pd->dirty[frame] = FALSE;
+  pd->fixCount[frame] = 0;
+
   return RC_OK;
 }
 
@@ -221,3 +307,193 @@ getFixCounts (BM_BufferPool *const bm)
   pd = (PoolData *) bm->mgmtData;  
   return pd->fixCount;
 }
+
+// internal generic functions for replacement strategies
+RC 
+initStrategyData (BM_BufferPool *const bm)
+{
+  switch(bm->strategy)
+    {
+    case RS_FIFO:
+      FIFO_initData(bm);
+      break;
+    default:
+      return RC_UNKOWN_REPLACEMENT_STRATEGY;
+    }
+
+  return RC_OK;
+}
+
+RC 
+choosePageFrame (BM_BufferPool *const bm, int *frameNum)
+{
+  switch(bm->strategy)
+    {
+    case RS_FIFO:
+      FIFO_chooseNext(bm, frameNum);
+      break;
+    default:
+      return RC_UNKOWN_REPLACEMENT_STRATEGY;
+    }
+  
+  return RC_OK;
+}
+
+RC 
+shutdownStrategy (BM_BufferPool *const bm)
+{
+  switch(bm->strategy)
+    {
+    case RS_FIFO:
+      FIFO_shutdown(bm);
+      break;
+    default:
+      return RC_UNKOWN_REPLACEMENT_STRATEGY;
+    }
+  
+  return RC_OK;
+}
+
+// FIFO
+RC 
+FIFO_initData (BM_BufferPool *const bm)
+{
+  PoolData *pd;
+
+  pd = (PoolData *) bm->mgmtData; 
+  pd->stratData = NULL;
+
+  return RC_OK;
+}
+
+RC 
+FIFO_chooseNext (BM_BufferPool *const bm, int *frameNum)
+{
+  PoolData *pd;
+  IntList *queue;
+  IntCell *lc;
+  int i;
+
+  pd = (PoolData *) bm->mgmtData; 
+  queue = (IntList *) pd->stratData;
+
+  // if there are empty buffer frames left then choose the first empty one
+  if (llength(queue) < bm->numPages)
+    {
+      for (i = 0; i < bm->numPages; i++)
+	if (pd->pageInFrame[i] == NO_PAGE)
+	  {
+	    *frameNum = i;
+	    pd->stratData = (void *) lappend(queue, i);
+	    return RC_OK;
+	  }
+    }
+  
+  // walk through list until a page is found with fixCount 0
+  for (i = 0, lc = queue->head; lc != NULL; i++, lc = lc->next)
+    {
+      int f = lc->data;
+      if (pd->fixCount[f] == 0)
+	{
+	  *frameNum = f;
+	  queue = ldelete(queue, i);
+	  pd->stratData = (void *) lappend(queue, f);
+	  return RC_OK;
+	}
+    }
+
+  return RC_BM_ALL_PAGES_FIXED;
+}
+
+RC 
+FIFO_shutdown (BM_BufferPool *const bm)
+{
+  PoolData *pd;
+  IntList *queue;
+  IntCell *lc, *f;
+
+  pd = (PoolData *) bm->mgmtData; 
+  queue = (IntList *) pd->stratData;
+  
+  if (queue == NIL)
+    return RC_OK;
+
+  for(lc = f = queue->head; lc != NULL; f = lc)
+    {
+      lc = lc -> next;
+      free(f);
+    }
+
+  free(queue);
+
+  return RC_OK;
+}
+
+// List functions
+IntList *
+lappend (IntList *list, int value)
+{
+  IntCell *newCell;
+
+  newCell = (IntCell *) malloc(sizeof(IntCell));
+  newCell->data = value;
+  newCell->next = NULL;
+
+  if (list == NIL)
+    {
+      IntList *new;
+      new = (IntList *) malloc (sizeof(IntList));
+      new->head = newCell;
+      new->tail = newCell;
+      new->length = 1;
+      return new;
+    }
+  
+  list->tail->next = newCell;
+  list->tail = newCell;
+  list->length++;
+
+  return list;
+}
+
+IntList *
+ldelete (IntList *list, int pos)
+{
+  IntCell *cur, *prev;
+  int i;
+
+  //TODO check that pos inside list
+  
+  if (pos == 0)
+    {
+      cur = list->head;
+      list->head = cur->next;
+      list->length--;
+
+      if (list->length == 1)
+	{
+	  free(cur);
+	  free(list);
+	  return NIL;
+	}
+
+      return list;
+    }
+
+  prev = list->head;
+  cur = prev->next;
+  for (i = 1; i < pos; i++)
+    {
+      prev = cur;
+      cur = cur->next;
+    }
+
+  prev->next = cur->next;
+  if (cur == list->tail)
+    list->tail = cur;
+  
+  free(cur);
+
+  return list;
+}
+
