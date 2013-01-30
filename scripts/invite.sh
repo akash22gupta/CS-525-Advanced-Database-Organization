@@ -13,7 +13,7 @@ ta_user='dma2'
 ta_email='dma2@hawk.iit.edu'
 
 # base directory for shared (template) code
-baserepos='/Users/lord_pretzel/Documents/IIT/Teaching/CS525 - Advanced Database Organisation/CodeTemplate/'
+baserepos='/Users/lord_pretzel/Documents/IIT/Teaching/CS525 - Advanced Database Organisation/2013-spring/CodeTemplate/'
 
 # repository name to create (on bitbucket)
 repos="cs525-s13-$1"
@@ -30,6 +30,6 @@ echo "create repos for \"${1}\":"
 
 # invite student to collaborate via e-mail
 echo "invite student $1"
-curl -u $bb_user:$bb_pass -X POST "https://api.bitbucket.org/1.0/invitations/$bb_user/$repos/$1$esuff" -d permission=write
+curl -u $bb_user:$bb_pass -X POST "https://api.bitbucket.org/1.0/invitations/$bb_user/$repos/$1$esuff" -d permission=admin
 
 popd

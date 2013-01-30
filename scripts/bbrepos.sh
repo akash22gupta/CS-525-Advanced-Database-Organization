@@ -13,7 +13,7 @@ ta_user='dma2'
 ta_email='dma2@hawk.iit.edu'
 
 # base directory for shared (template) code
-baserepos='/Users/lord_pretzel/Documents/IIT/Teaching/CS525 - Advanced Database Organisation/CodeTemplate/'
+baserepos='/Users/lord_pretzel/Documents/IIT/Teaching/CS525 - Advanced Database Organisation/2013-spring/CodeTemplate/'
 
 # repository name to create (on bitbucket)
 repos="cs525-s13-$1"
