@@ -224,7 +224,7 @@ testFIFO ()
   // pin one page and test remainder
   i = numLinRequests;
   pinPage(bm, h, requests[i]);
-  ASSERT_EQUALS_POOL(poolContents[i],bm,"");
+  ASSERT_EQUALS_POOL(poolContents[i],bm,"pool content after pin page");
 
   // read pages and mark them as dirty
   for(i = numLinRequests + 1; i < numLinRequests + numChangeRequests + 1; i++)
