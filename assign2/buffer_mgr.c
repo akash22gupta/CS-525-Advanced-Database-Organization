@@ -151,6 +151,7 @@ shutdownBufferPool(BM_BufferPool *const bm)
   bm->mgmtData = NULL;
   
   // free pool
+  free(pd->file);
   free(pd->frames);
   free(pd->pageInFrame);
   free(pd->frameForPage);
@@ -510,10 +511,10 @@ ldelete (IntList *list, int pos)
       cur = list->head;
       list->head = cur->next;
       list->length--;
+      free(cur);
 
       if (list->length == 1)
 	{
-	  free(cur);
 	  free(list);
 	  return NIL;
 	}

@@ -123,7 +123,10 @@ closePageFile (SM_FileHandle *fHandle)
   CHECK_WRITE(write(GET_FD(fHandle), (void *) buffer, PAGE_SIZE));
 
   close(GET_FD(fHandle));
+
   CHECK_FD(GET_FD(fHandle), "error closing file");
+  free(fHandle->mgmtInfo);
+
   return RC_OK;
 }
 

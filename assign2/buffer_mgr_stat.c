@@ -58,7 +58,7 @@ printPageContent (BM_PageHandle *const page)
 
   printf("[Page %i]\n", page->pageNum);
 
-  for (int i = 1; i <= PAGE_SIZE; i++)
+  for (i = 1; i <= PAGE_SIZE; i++)
     printf("%02X%s%s", page->data[i], (i % 8) ? "" : " ", (i % 64) ? "" : "\n"); 
 }
 
@@ -72,7 +72,7 @@ sprintPageContent (BM_PageHandle *const page)
   message = (char *) malloc(30 + (2 * PAGE_SIZE) + (PAGE_SIZE % 64) + (PAGE_SIZE % 8));
   pos += sprintf(message + pos, "[Page %i]\n", page->pageNum);
 
-  for (int i = 1; i <= PAGE_SIZE; i++)
+  for (i = 1; i <= PAGE_SIZE; i++)
     pos += sprintf(message + pos, "%02X%s%s", page->data[i], (i % 8) ? "" : " ", (i % 64) ? "" : "\n"); 
   
   return message;
