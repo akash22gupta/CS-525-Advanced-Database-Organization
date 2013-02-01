@@ -31,6 +31,7 @@ typedef struct Schema
   char **attrNames;
   DataType *dataTypes;
   int *typeLength;
+  int *keyAttrs;
 } Schema;
 
 // TableData: Management Structure for a Record Manager to handle one relation
@@ -52,6 +53,7 @@ typedef struct ScanHandle
 RC createTable (char *name, Schema *schema);
 RC openTable (TableData *rel, char *name);
 RC closeTable (TableData *rel);
+RC getNumTuples (TableData *rel);
 
 // handling records
 RC insertRecord (TableData *rel, char *data, Record *record);
@@ -65,11 +67,12 @@ RC next (ScanHandle *scan);
 RC closeScan (ScanHandle *scan);
 
 // dealing with schemas
-int getNumTuples (TableData *rel);
 int getRecordSize (Schema *schema);
+Schema *createSchema (int numAttr, char **attrNames, DataType *dataTypes, int *typeLength, int *keys);
 
 // debug methods
-RC printTable(TableData *rel);
+RC printTableInfo(TableData *rel);
+RC printTableContent(TableData *rel);
 RC printSchema(Schema *schema);
 RC printRecord(Record *record, Schema *schema);
 RC printValue(Record *record, Schema *schema, int attrNum);

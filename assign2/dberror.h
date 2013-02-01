@@ -17,5 +17,6 @@ extern char *RC_message;
 
 /* print a message to standard out describing the error */
 extern void printError (RC error);
+extern char *errorMessage (RC error);
 
 #endif

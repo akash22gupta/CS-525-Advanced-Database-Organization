@@ -34,8 +34,11 @@ typedef struct BM_PageHandle {
 } BM_PageHandle;
 
 // convenience macros
-#define MAKE_POOL ((BM_BufferPool *) malloc (sizeof(BM_BufferPool)))
-#define MAKE_PAGE_HANDLE ((BM_PageHandle *) malloc (sizeof(BM_PageHandle)))
+#define MAKE_POOL()					\
+  ((BM_BufferPool *) malloc (sizeof(BM_BufferPool)))
+
+#define MAKE_PAGE_HANDLE()				\
+  ((BM_PageHandle *) malloc (sizeof(BM_PageHandle)))
 
 // Buffer Manager Interface Pool Handling
 RC initBufferPool(BM_BufferPool *const bm, const char *const pageFileName, const int numPages, ReplacementStrategy strategy);
@@ -52,8 +55,13 @@ RC pinPage (BM_BufferPool *const bm, BM_PageHandle *const page, const PageNumber
 int *getFrameContents (BM_BufferPool *const bm);
 bool *getDirtyFlags (BM_BufferPool *const bm);
 int *getFixCounts (BM_BufferPool *const bm);
+int getNumReadIO (BM_BufferPool *const bm);
+int getNumWriteIO (BM_BufferPool *const bm);
 
 // debug functions
 void printPoolContent (BM_BufferPool *const bm);
 void printPageContent (BM_PageHandle *const page);
+char *sprintPoolContent (BM_BufferPool *const bm);
+char *sprintPageContent (BM_PageHandle *const page);
+
 #endif

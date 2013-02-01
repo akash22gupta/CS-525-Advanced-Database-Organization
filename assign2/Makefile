@@ -1,4 +1,4 @@
-OBJ=storage_mgr.o buffer_mgr.o buffer_mgr_stat.o
+OBJ=storage_mgr.o buffer_mgr.o buffer_mgr_stat.o dberror.o
 TEST_OBJ=test_assign2_1.o
 TEST_BIN=test_assign2
 CFLAGS:=$(CFLAGS) -I. -g

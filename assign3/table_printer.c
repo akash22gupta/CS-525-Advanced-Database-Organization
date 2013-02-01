@@ -3,11 +3,19 @@
 static RC attrOffset (Schema *schema, int attrNum, int *result);
 
 RC 
-printTable(TableData *rel)
+printTableInfo(TableData *rel)
 {
 
   return RC_OK;  
 }
+
+RC 
+printTableContent(TableData *rel)
+{
+
+  return RC_OK;  
+}
+
 
 RC 
 printSchema(Schema *schema)

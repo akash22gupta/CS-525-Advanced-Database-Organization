@@ -61,7 +61,6 @@ void
 initStorageManager (void)
 {
   buffer = malloc(PAGE_SIZE);
-  printf("initialized buffer for storage manager\n");
 }
 
 RC 
@@ -106,8 +105,6 @@ openPageFile (char *fileName, SM_FileHandle *fHandle)
   fHandle->curPagePos = 0;
   fHandle->mgmtInfo = malloc(sizeof(int));
   GET_FD(fHandle) = fd;
-
-  printf("opened file successful\n");
 
   return RC_OK;
 }
@@ -248,12 +245,3 @@ ensureCapacity (int numberOfPages, SM_FileHandle *fHandle)
   return RC_OK;
 }
 
-/* print a message to standard out describing the error */
-void 
-printError (RC error)
-{
-  if (RC_message != NULL)
-    printf("EC (%i), \"%s\"\n", error, RC_message);
-  else
-    printf("EC (%i)\n", error);
-}

@@ -16,6 +16,13 @@ typedef char PageData[PAGE_SIZE];
 
 #define MAX_NUM_PAGES 100000
 
+typedef struct PoolStats {
+  int numReads;
+  int numWrites;
+  int numReadIO;
+  int numWriteIO;
+} PoolStats;
+
 typedef struct PoolData {
   SM_FileHandle *file;
   PageData *frames;
@@ -24,7 +31,10 @@ typedef struct PoolData {
   int *fixCount;
   bool *dirty;
   void *stratData;
+  PoolStats *stats;
 } PoolData;
+
+
 
 #define CHECK(code)				\
   do {						\
@@ -94,6 +104,12 @@ initBufferPool(BM_BufferPool *const bm , const char *pageFileName, const int num
   pd->frameForPage = (int *) malloc(MAX_NUM_PAGES * sizeof(int));
   pd->fixCount = (int *) malloc(numPages * sizeof(int));
   pd->dirty = (bool *) malloc(numPages * sizeof(bool));
+  pd->stats = (PoolStats *) malloc(sizeof(PoolStats));
+
+  pd->stats->numReads = 0;
+  pd->stats->numWrites = 0;
+  pd->stats->numReadIO = 0;
+  pd->stats->numWriteIO = 0;
 
   for (i = 0; i < numPages; i++)
     {
@@ -140,6 +156,7 @@ shutdownBufferPool(BM_BufferPool *const bm)
   free(pd->frameForPage);
   free(pd->fixCount);
   free(pd->dirty);
+  free(pd->stats);
   free(pd);
 
   return RC_OK;
@@ -159,6 +176,8 @@ forceFlushPool(BM_BufferPool *const bm)
 	  {
 	    CHECK(writeBlock(pd->pageInFrame[i], pd->file, (SM_PageHandle) pd->frames[i]));
 	    pd->dirty[i] = FALSE;
+
+	    pd->stats->numWriteIO++;
 	  }
     }
 
@@ -222,6 +241,8 @@ forcePage (BM_BufferPool *const bm, BM_PageHandle *const page)
       pd->dirty[f] = FALSE;
     }
 
+  pd->stats->numWriteIO++;
+
   return RC_OK;
 }
 
@@ -277,6 +298,8 @@ loadPage(BM_BufferPool *bm, int frame, int pageNum)
   pd->frameForPage[pageNum] = frame;
   pd->dirty[frame] = FALSE;
   pd->fixCount[frame] = 0;
+  
+  pd->stats->numReadIO++;
 
   return RC_OK;
 }
@@ -307,6 +330,24 @@ getFixCounts (BM_BufferPool *const bm)
   pd = (PoolData *) bm->mgmtData;  
   return pd->fixCount;
 }
+
+// stats functions
+int 
+getNumReadIO (BM_BufferPool *const bm)
+{
+  PoolStats *st = ((PoolData *) bm->mgmtData)->stats;
+
+  return st->numReadIO;
+}
+
+int 
+getNumWriteIO (BM_BufferPool *const bm)
+{
+  PoolStats *st = ((PoolData *) bm->mgmtData)->stats;
+
+  return st->numWriteIO;
+}
+
 
 // internal generic functions for replacement strategies
 RC 
