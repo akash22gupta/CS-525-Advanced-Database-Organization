@@ -173,7 +173,7 @@ forceFlushPool(BM_BufferPool *const bm)
 
   for(i = 0; i < bm->numPages; i++)
     {
-      if (!(pd->fixCount) && pd->dirty[i] == TRUE)
+      if (!(pd->fixCount[i]) && pd->dirty[i] == TRUE)
 	  {
 	    CHECK(writeBlock(pd->pageInFrame[i], pd->file, (SM_PageHandle) pd->frames[i]));
 	    pd->dirty[i] = FALSE;
