@@ -168,10 +168,11 @@ testReadPage ()
   CHECK(pinPage(bm, h, 0));
 
   CHECK(markDirty(bm, h));
-  CHECK(forcePage(bm, h));
 
   CHECK(unpinPage(bm,h));
   CHECK(unpinPage(bm,h));
+
+  CHECK(forcePage(bm, h));
 
   CHECK(shutdownBufferPool(bm));
   CHECK(destroyPageFile("testbuffer.bin"));
