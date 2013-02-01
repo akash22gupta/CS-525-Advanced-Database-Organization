@@ -11,3 +11,5 @@ do
     git checkout "${branch}"
     git pull "${repos}" master
 done
+
+git checkout "${CURBRANCH}"
