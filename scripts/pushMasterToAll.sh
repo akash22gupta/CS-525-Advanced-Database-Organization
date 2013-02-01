@@ -8,8 +8,8 @@ for branch in ${BRANCHES};
 do
     repos=${branch:1};
     echo "*************** ${branch} @ ${repos} *****************"
-    git pull "${repos}" master
     git checkout "${branch}"
+    git pull "${repos}" master
     git merge -m "${MESSAGE}" master
     git push "${repos}"
 done

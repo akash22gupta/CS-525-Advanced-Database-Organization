@@ -8,5 +8,6 @@ for branch in ${BRANCHES};
 do
     repos=${branch:1};
     echo "*************** pull ${branch} @ ${repos} *****************"
+    git checkout "${branch}"
     git pull "${repos}" master
 done
