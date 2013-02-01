@@ -129,5 +129,6 @@ testSinglePageContent(void)
   // destroy new page file
   CHECK_RETURN_RC(destroyPageFile (TESTPF));  
   
+  free(ph);
   return RC_OK;
 }
