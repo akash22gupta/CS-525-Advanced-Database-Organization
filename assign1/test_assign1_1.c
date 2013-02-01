@@ -127,6 +127,7 @@ testSinglePageContent(void)
   printf("reading first block\n");
 
   // destroy new page file
+  CHECK_RETURN_RC(closePageFile (&fh));  
   CHECK_RETURN_RC(destroyPageFile (TESTPF));  
   
   free(ph);

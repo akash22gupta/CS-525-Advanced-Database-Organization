@@ -127,6 +127,8 @@ closePageFile (SM_FileHandle *fHandle)
 
   close(GET_FD(fHandle));
   CHECK_FD(GET_FD(fHandle), "error closing file");
+  free(fHandle->mgmtInfo);
+
   return RC_OK;
 }
 
