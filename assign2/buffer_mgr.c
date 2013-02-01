@@ -305,13 +305,13 @@ loadPage(BM_BufferPool *bm, int frame, int pageNum)
   return RC_OK;
 }
 
-int *
+PageNumber *
 getFrameContents (BM_BufferPool *const bm)
 {
   PoolData *pd;
 
   pd = (PoolData *) bm->mgmtData;  
-  return pd->pageInFrame;
+  return (PageNumber *) pd->pageInFrame;
 }
 
 bool *

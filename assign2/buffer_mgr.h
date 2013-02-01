@@ -1,3 +1,4 @@
+
 #ifndef BUFFER_MANAGER_H
 #define BUFFER_MANAGER_H
 
@@ -52,7 +53,7 @@ RC forcePage (BM_BufferPool *const bm, BM_PageHandle *const page);
 RC pinPage (BM_BufferPool *const bm, BM_PageHandle *const page, const PageNumber pageNum);
 
 // Statistics Interface
-int *getFrameContents (BM_BufferPool *const bm);
+PageNumber *getFrameContents (BM_BufferPool *const bm);
 bool *getDirtyFlags (BM_BufferPool *const bm);
 int *getFixCounts (BM_BufferPool *const bm);
 int getNumReadIO (BM_BufferPool *const bm);

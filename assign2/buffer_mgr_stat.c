@@ -11,7 +11,7 @@ static void printStrat (BM_BufferPool *const bm);
 void 
 printPoolContent (BM_BufferPool *const bm)
 {
-  int *frameContent;
+  PageNumber *frameContent;
   bool *dirty;
   int *fixCount;
   int i;
@@ -32,7 +32,7 @@ printPoolContent (BM_BufferPool *const bm)
 char *
 sprintPoolContent (BM_BufferPool *const bm)
 {
-  int *frameContent;
+  PageNumber *frameContent;
   bool *dirty;
   int *fixCount;
   int i;
