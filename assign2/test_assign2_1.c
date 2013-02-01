@@ -1,5 +1,6 @@
-#include "buffer_mgr.h"
 #include "storage_mgr.h"
+#include "buffer_mgr_stat.h"
+#include "buffer_mgr.h"
 
 #include <stdio.h>
 #include <stdlib.h>

@@ -58,10 +58,4 @@ int *getFixCounts (BM_BufferPool *const bm);
 int getNumReadIO (BM_BufferPool *const bm);
 int getNumWriteIO (BM_BufferPool *const bm);
 
-// debug functions
-void printPoolContent (BM_BufferPool *const bm);
-void printPageContent (BM_PageHandle *const page);
-char *sprintPoolContent (BM_BufferPool *const bm);
-char *sprintPageContent (BM_PageHandle *const page);
-
 #endif

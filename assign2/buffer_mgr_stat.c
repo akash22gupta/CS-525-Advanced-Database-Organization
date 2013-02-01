@@ -1,3 +1,4 @@
+#include "buffer_mgr_stat.h"
 #include "buffer_mgr.h"
 
 #include <stdio.h>
