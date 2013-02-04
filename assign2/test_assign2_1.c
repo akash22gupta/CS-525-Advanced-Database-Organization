@@ -1,0 +1,257 @@
+#include "storage_mgr.h"
+#include "buffer_mgr_stat.h"
+#include "buffer_mgr.h"
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+// var to store the current test's name
+static char *testName;
+#define TEST_INFO  __FILE__, testName, __LINE__, __TIME__
+
+// check the return code and exit if it's and error
+#define CHECK(code)							\
+  do {									\
+    int rc_internal = (code);						\
+    if (rc_internal != RC_OK)						\
+      {									\
+	char *message = errorMessage(rc_internal);			\
+	printf("[%s-%s-L%i-%s] FAILED: Operation returned error: %s\n",TEST_INFO, message); \
+	free(message);							\
+	exit(1);							\
+      }									\
+  } while(0);
+
+// check whether two strings are equal
+#define ASSERT_EQUALS_STRING(expected,real,message)			\
+  do {									\
+    if (strcmp((expected),(real)) != 0)					\
+      {									\
+	printf("[%s-%s-L%i-%s] FAILED: expected <%s> but was <%s>: %s\n",TEST_INFO, expected, real, message); \
+	exit(1);							\
+      }									\
+    printf("[%s-%s-L%i-%s] OK: expected <%s> and was <%s>: %s\n",TEST_INFO, expected, real, message); \
+  } while(0)
+
+// check whether two ints are equals
+#define ASSERT_EQUALS_INT(expected,real,message)			\
+  do {									\
+    if ((expected) != (real))					\
+      {									\
+	printf("[%s-%s-L%i-%s] FAILED: expected <%i> but was <%i>: %s\n",TEST_INFO, expected, real, message); \
+	exit(1);							\
+      }									\
+    printf("[%s-%s-L%i-%s] OK: expected <%i> and was <%i>: %s\n",TEST_INFO, expected, real, message); \
+  } while(0)
+
+// check whether two the content of a buffer pool is the same as an expected content 
+// (given in the format produced by sprintPoolContent)
+#define ASSERT_EQUALS_POOL(expected,bm,message)			\
+  do {									\
+    char *real;								\
+    real = sprintPoolContent(bm);					\
+    if (strcmp((expected),real) != 0)					\
+      {									\
+	printf("[%s-%s-L%i-%s] FAILED: expected <%s> but was <%s>: %s\n",TEST_INFO, expected, real, message); \
+	free(real);							\
+	exit(1);							\
+      }									\
+    printf("[%s-%s-L%i-%s] OK: expected <%s> and was <%s>: %s\n",TEST_INFO, expected, real, message); \
+    free(real);								\
+  } while(0)
+
+
+// test worked
+#define TEST_DONE()							\
+  do {									\
+    printf("[%s-%s-L%i-%s] OK: finished test\n\n",TEST_INFO); \
+  } while (0)
+
+// test and helper methods
+static void testCreatingAndReadingDummyPages (void);
+static void createDummyPages(BM_BufferPool *bm, int num);
+static void checkDummyPages(BM_BufferPool *bm, int num);
+
+static void testReadPage (void);
+
+static void testFIFO (void);
+
+// main method
+int 
+main (void) 
+{
+  initStorageManager();
+  testName = "";
+
+  testCreatingAndReadingDummyPages();
+  testReadPage();
+  testFIFO();
+}
+
+// create pages n with content "Page X" and read them back to check whether the content is right
+void
+testCreatingAndReadingDummyPages (void)
+{
+  BM_BufferPool *bm = MAKE_POOL();
+  testName = "Creating and Reading Back Dummy Pages";
+
+  CHECK(createPageFile("testbuffer.bin"));
+
+  createDummyPages(bm, 22);
+  checkDummyPages(bm, 20);
+
+  createDummyPages(bm, 10000);
+  checkDummyPages(bm, 10000);
+
+  CHECK(destroyPageFile("testbuffer.bin"));
+
+  free(bm);
+  TEST_DONE();
+}
+
+
+void 
+createDummyPages(BM_BufferPool *bm, int num)
+{
+  int i;
+  BM_PageHandle *h = MAKE_PAGE_HANDLE();
+
+  CHECK(initBufferPool(bm, "testbuffer.bin", 3, RS_FIFO, NULL));
+  
+  for (i = 0; i < num; i++)
+    {
+      CHECK(pinPage(bm, h, i));
+      sprintf(h->data, "%s-%i", "Page", h->pageNum);
+      CHECK(markDirty(bm, h));
+      CHECK(unpinPage(bm,h));
+    }
+
+  CHECK(shutdownBufferPool(bm));
+
+  free(h);
+}
+
+void 
+checkDummyPages(BM_BufferPool *bm, int num)
+{
+  int i;
+  BM_PageHandle *h = MAKE_PAGE_HANDLE();
+  char *expected = malloc(sizeof(char) * 512);
+
+  CHECK(initBufferPool(bm, "testbuffer.bin", 3, RS_FIFO, NULL));
+
+  for (i = 0; i < num; i++)
+    {
+      CHECK(pinPage(bm, h, i));
+
+      sprintf(expected, "%s-%i", "Page", h->pageNum);
+      ASSERT_EQUALS_STRING(expected, h->data, "reading back dummy page content");
+
+      CHECK(unpinPage(bm,h));
+    }
+
+  CHECK(shutdownBufferPool(bm));
+
+  free(expected);
+  free(h);
+}
+
+void
+testReadPage ()
+{
+  BM_BufferPool *bm = MAKE_POOL();
+  BM_PageHandle *h = MAKE_PAGE_HANDLE();
+  testName = "Reading a page";
+
+  CHECK(createPageFile("testbuffer.bin"));
+  CHECK(initBufferPool(bm, "testbuffer.bin", 3, RS_FIFO, NULL));
+  
+  CHECK(pinPage(bm, h, 0));
+  CHECK(pinPage(bm, h, 0));
+
+  CHECK(markDirty(bm, h));
+
+  CHECK(unpinPage(bm,h));
+  CHECK(unpinPage(bm,h));
+
+  CHECK(forcePage(bm, h));
+
+  CHECK(shutdownBufferPool(bm));
+  CHECK(destroyPageFile("testbuffer.bin"));
+
+  free(bm);
+  free(h);
+
+  TEST_DONE();
+}
+
+void
+testFIFO ()
+{
+  // expected results
+  const char *poolContents[] = { 
+    "[0 0],[-1 0],[-1 0]" , 
+    "[0 0],[1 0],[-1 0]", 
+    "[0 0],[1 0],[2 0]", 
+    "[3 0],[1 0],[2 0]", 
+    "[3 0],[4 0],[2 0]",
+    "[3 0],[4 1],[2 0]",
+    "[3 0],[4 1],[5x0]",
+    "[6x0],[4 1],[5x0]",
+    "[6x0],[4 1],[0x0]",
+    "[6 0],[4 1],[0 0]"
+  };
+  const int requests[] = {0,1,2,3,4,4,5,6,0};
+  const int numLinRequests = 5;
+  const int numChangeRequests = 3;
+
+  int i;
+  BM_BufferPool *bm = MAKE_POOL();
+  BM_PageHandle *h = MAKE_PAGE_HANDLE();
+  testName = "Testing FIFO page replacement";
+
+  CHECK(createPageFile("testbuffer.bin"));
+
+  createDummyPages(bm, 100);
+
+  CHECK(initBufferPool(bm, "testbuffer.bin", 3, RS_FIFO, NULL));
+
+  // reading some pages linearly with direct unpin and no modifications
+  for(i = 0; i < numLinRequests; i++)
+    {
+      pinPage(bm, h, requests[i]);
+      unpinPage(bm, h);
+      ASSERT_EQUALS_POOL(poolContents[i], bm, "check pool content");
+    }
+
+  // pin one page and test remainder
+  i = numLinRequests;
+  pinPage(bm, h, requests[i]);
+  ASSERT_EQUALS_POOL(poolContents[i],bm,"pool content after pin page");
+
+  // read pages and mark them as dirty
+  for(i = numLinRequests + 1; i < numLinRequests + numChangeRequests + 1; i++)
+    {
+      pinPage(bm, h, requests[i]);
+      markDirty(bm, h);
+      unpinPage(bm, h);
+      ASSERT_EQUALS_POOL(poolContents[i], bm, "check pool content");
+    }
+
+  // flush buffer pool to disk
+  i = numLinRequests + numChangeRequests + 1;
+  forceFlushPool(bm);
+  ASSERT_EQUALS_POOL(poolContents[i],bm,"pool content after flush");
+
+  // check number of write IOs
+  ASSERT_EQUALS_INT(3, getNumWriteIO(bm), "check number of write I/Os");
+  ASSERT_EQUALS_INT(8, getNumReadIO(bm), "check number of read I/Os");
+
+  CHECK(shutdownBufferPool(bm));
+  CHECK(destroyPageFile("testbuffer.bin"));
+
+  free(bm);
+  free(h);
+  TEST_DONE();
+}
