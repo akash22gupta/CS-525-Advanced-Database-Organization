@@ -117,7 +117,7 @@ createDummyPages(BM_BufferPool *bm, int num)
   int i;
   BM_PageHandle *h = MAKE_PAGE_HANDLE();
 
-  CHECK(initBufferPool(bm, "testbuffer.bin", 3, RS_FIFO));
+  CHECK(initBufferPool(bm, "testbuffer.bin", 3, RS_FIFO, NULL));
   
   for (i = 0; i < num; i++)
     {
@@ -139,7 +139,7 @@ checkDummyPages(BM_BufferPool *bm, int num)
   BM_PageHandle *h = MAKE_PAGE_HANDLE();
   char *expected = malloc(sizeof(char) * 512);
 
-  CHECK(initBufferPool(bm, "testbuffer.bin", 3, RS_FIFO));
+  CHECK(initBufferPool(bm, "testbuffer.bin", 3, RS_FIFO, NULL));
 
   for (i = 0; i < num; i++)
     {
@@ -165,7 +165,7 @@ testReadPage ()
   testName = "Reading a page";
 
   CHECK(createPageFile("testbuffer.bin"));
-  CHECK(initBufferPool(bm, "testbuffer.bin", 3, RS_FIFO));
+  CHECK(initBufferPool(bm, "testbuffer.bin", 3, RS_FIFO, NULL));
   
   CHECK(pinPage(bm, h, 0));
   CHECK(pinPage(bm, h, 0));
@@ -215,7 +215,7 @@ testFIFO ()
 
   createDummyPages(bm, 100);
 
-  CHECK(initBufferPool(bm, "testbuffer.bin", 3, RS_FIFO));
+  CHECK(initBufferPool(bm, "testbuffer.bin", 3, RS_FIFO, NULL));
 
   // reading some pages linearly with direct unpin and no modifications
   for(i = 0; i < numLinRequests; i++)

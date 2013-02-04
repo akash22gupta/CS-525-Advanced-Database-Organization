@@ -87,7 +87,7 @@ static RC FIFO_shutdown (BM_BufferPool *const bm);
 
 // functions
 RC 
-initBufferPool(BM_BufferPool *const bm , const char *pageFileName, const int numPages, ReplacementStrategy strategy)
+initBufferPool(BM_BufferPool *const bm , const char *pageFileName, const int numPages, ReplacementStrategy strategy, void *stratData)
 {
   SM_FileHandle *h; 
   PoolData *pd;

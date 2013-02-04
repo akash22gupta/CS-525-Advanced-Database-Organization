@@ -26,7 +26,8 @@ typedef struct BM_BufferPool {
   char *pageFile;
   int numPages;
   ReplacementStrategy strategy;
-  void *mgmtData; // use this one to store the bookkeeping info your buffer manager needs for a buffer pool
+  void *mgmtData; // use this one to store the bookkeeping info your buffer 
+                  // manager needs for a buffer pool
 } BM_BufferPool;
 
 typedef struct BM_PageHandle {
@@ -42,7 +43,9 @@ typedef struct BM_PageHandle {
   ((BM_PageHandle *) malloc (sizeof(BM_PageHandle)))
 
 // Buffer Manager Interface Pool Handling
-RC initBufferPool(BM_BufferPool *const bm, const char *const pageFileName, const int numPages, ReplacementStrategy strategy);
+RC initBufferPool(BM_BufferPool *const bm, const char *const pageFileName, 
+		  const int numPages, ReplacementStrategy strategy, 
+		  void *stratData);
 RC shutdownBufferPool(BM_BufferPool *const bm);
 RC forceFlushPool(BM_BufferPool *const bm);
 
@@ -50,7 +53,8 @@ RC forceFlushPool(BM_BufferPool *const bm);
 RC markDirty (BM_BufferPool *const bm, BM_PageHandle *const page);
 RC unpinPage (BM_BufferPool *const bm, BM_PageHandle *const page);
 RC forcePage (BM_BufferPool *const bm, BM_PageHandle *const page);
-RC pinPage (BM_BufferPool *const bm, BM_PageHandle *const page, const PageNumber pageNum);
+RC pinPage (BM_BufferPool *const bm, BM_PageHandle *const page, 
+	    const PageNumber pageNum);
 
 // Statistics Interface
 PageNumber *getFrameContents (BM_BufferPool *const bm);
