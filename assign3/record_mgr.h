@@ -14,6 +14,16 @@ typedef enum DataType {
   DT_BOOL = 3
 } DataType;
 
+typedef struct AttrValue {
+  DataType dt;
+  union Value {
+    int intV;
+    char *stringV;
+    float floatV;
+    bool boolV;
+  };
+} AttrValue;
+
 typedef struct RID {
   int page;
   int slot;
@@ -55,7 +65,7 @@ RC openTable (TableData *rel, char *name);
 RC closeTable (TableData *rel);
 RC getNumTuples (TableData *rel);
 
-// handling records
+// handling records in a table
 RC insertRecord (TableData *rel, char *data, Record *record);
 RC deleteRecord (RID *id);
 RC updateRecord (TableData *rel, Record *record);
@@ -69,6 +79,14 @@ RC closeScan (ScanHandle *scan);
 // dealing with schemas
 int getRecordSize (Schema *schema);
 Schema *createSchema (int numAttr, char **attrNames, DataType *dataTypes, int *typeLength, int *keys);
+
+// dealing with records and attribute values
+RC createRecord (Record *record, Schema *schema);
+RC getAttr (Record *record, Schema *schema, int attrNum, AttrVal *value);
+RC setAttr (Record *record, Schema *schema, int attrNum, AttrVal *value);
+
+char *attrValueToString (AttrVal *value);
+AttrVal stringToAttrValue (char *value);
 
 // debug methods
 RC printTableInfo(TableData *rel);
