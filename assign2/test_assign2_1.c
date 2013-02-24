@@ -200,7 +200,8 @@ testFIFO ()
     "[3 0],[4 1],[5x0]",
     "[6x0],[4 1],[5x0]",
     "[6x0],[4 1],[0x0]",
-    "[6 0],[4 1],[0 0]"
+    "[6x0],[4 0],[0x0]",
+    "[6 0],[4 0],[0 0]"
   };
   const int requests[] = {0,1,2,3,4,4,5,6,0};
   const int numLinRequests = 5;
@@ -241,6 +242,11 @@ testFIFO ()
 
   // flush buffer pool to disk
   i = numLinRequests + numChangeRequests + 1;
+  h->pageNum = 4;
+  unpinPage(bm, h);
+  ASSERT_EQUALS_POOL(poolContents[i],bm,"unpin last page");
+  
+  i++;
   forceFlushPool(bm);
   ASSERT_EQUALS_POOL(poolContents[i],bm,"pool content after flush");
 
