@@ -83,7 +83,7 @@ testOperators (void)
   OP_TRUE(stringToValue("bt"),stringToValue("bf"), boolOr, "t OR f = t");
   OP_FALSE(stringToValue("bf"),stringToValue("bf"), boolOr, "f OR f = f");
 
-  CHECK(boolNot(stringToValue("bf"), result));
+  TEST_CHECK(boolNot(stringToValue("bf"), result));
   ASSERT_TRUE(result->v.boolV, "!f = t");
 
   TEST_DONE();

@@ -18,13 +18,14 @@ extern RC shutdownRecordManager ();
 extern RC createTable (char *name, Schema *schema);
 extern RC openTable (RM_TableData *rel, char *name);
 extern RC closeTable (RM_TableData *rel);
+extern RC deleteTable (char *name);
 extern RC getNumTuples (RM_TableData *rel);
 
 // handling records in a table
-extern RC insertRecord (RM_TableData *rel, char *data, Record *record);
-extern RC deleteRecord (RID *id);
+extern RC insertRecord (RM_TableData *rel, Record *record);
+extern RC deleteRecord (RM_TableData *rel, RID *id);
 extern RC updateRecord (RM_TableData *rel, Record *record);
-extern RC getRecord (RM_TableData *rel, RID *id, Record *record);
+extern RC getRecord (RM_TableData *rel, RID id, Record *record);
 
 // scans
 extern RC startScan (RM_TableData *rel, RM_ScanHandle *scan, Expr *cond);

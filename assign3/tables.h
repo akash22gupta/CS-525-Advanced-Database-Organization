@@ -51,6 +51,15 @@ typedef struct RM_TableData
   void *mgmtData;
 } RM_TableData;
 
+#define MAKE_STRING_VALUE(result, value)				\
+  do {									\
+    result = (Value *) malloc(sizeof(Value));				\
+    result->dt = DT_STRING;						\
+    result->v.stringV = (char *) malloc(strlen(value) + 1);		\
+    strcpy(result->v.stringV, value);					\
+  } while(0)
+
+
 #define MAKE_VALUE(result, datatype, value)				\
   do {									\
     result = (Value *) malloc(sizeof(Value));				\
@@ -59,10 +68,6 @@ typedef struct RM_TableData
       {									\
       case DT_INT:							\
 	result->v.intV = value;						\
-	break;								\
-      case DT_STRING:							\
-	result->v.stringV = (char *) malloc(strlen(value));		\
-	strcpy(result->v.stringV, value);				\
 	break;								\
       case DT_FLOAT:							\
 	result->v.floatV = value;					\

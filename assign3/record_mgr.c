@@ -8,6 +8,19 @@
 // table management
 
 RC
+initRecordManager (void *mgmtData)
+{
+  return RC_OK;
+}
+
+RC
+shutdownRecordManager (void *mgmtData)
+{
+  return RC_OK;
+}
+
+
+RC
 createTable (char *name, Schema *schema)
 {
   return RC_OK;
@@ -25,6 +38,12 @@ closeTable (RM_TableData *rel)
   return RC_OK;
 }
 
+RC 
+deleteTable (char *name)
+{
+  return RC_OK;
+}
+
 RC
 getNumTuples (RM_TableData *rel)
 {
@@ -34,13 +53,15 @@ getNumTuples (RM_TableData *rel)
 // handling records in a table
 
 RC
-insertRecord (RM_TableData *rel, char *data, Record *record)
+insertRecord (RM_TableData *rel, Record *record)
 {
   return RC_OK;
 }
 
+
+
 RC
-deleteRecord (RID *id)
+deleteRecord (RM_TableData *rel, RID *id)
 {
   return RC_OK;
 }
@@ -52,7 +73,7 @@ updateRecord (RM_TableData *rel, Record *record)
 }
 
 RC
-getRecord (RM_TableData *rel, RID *id, Record *record)
+getRecord (RM_TableData *rel, RID id, Record *record)
 {
   return RC_OK;
 }
