@@ -61,7 +61,7 @@ insertRecord (RM_TableData *rel, Record *record)
 
 
 RC
-deleteRecord (RM_TableData *rel, RID *id)
+deleteRecord (RM_TableData *rel, RID id)
 {
   return RC_OK;
 }

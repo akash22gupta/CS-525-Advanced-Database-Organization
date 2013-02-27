@@ -23,7 +23,7 @@ extern RC getNumTuples (RM_TableData *rel);
 
 // handling records in a table
 extern RC insertRecord (RM_TableData *rel, Record *record);
-extern RC deleteRecord (RM_TableData *rel, RID *id);
+extern RC deleteRecord (RM_TableData *rel, RID id);
 extern RC updateRecord (RM_TableData *rel, Record *record);
 extern RC getRecord (RM_TableData *rel, RID id, Record *record);
 
