@@ -47,61 +47,62 @@ extern RC freeExpr (Expr *expr);
 extern void freeVal(Value *val);
 
 
-#define CPVAL(result,input)						\
+#define CPVAL(_result,_input)						\
   do {									\
-  result->dt = input->dt;						\
-  switch(input->dt)                                                     \
+  _result->dt = _input->dt;						\
+  switch(_input->dt)                                                     \
     {									\
     case DT_INT:							\
-      result->v.intV = input->v.intV;					\
+      _result->v.intV = _input->v.intV;					\
       break;								\
     case DT_STRING:							\
-      result->v.stringV = (char *) malloc(strlen(input->v.stringV));	\
-      strcpy(result->v.stringV, input->v.stringV);			\
+      _result->v.stringV = (char *) malloc(strlen(_input->v.stringV));	\
+      strcpy(_result->v.stringV, _input->v.stringV);			\
       break;								\
     case DT_FLOAT:							\
-      result->v.floatV = input->v.floatV;				\
+      _result->v.floatV = _input->v.floatV;				\
       break;								\
     case DT_BOOL:							\
-      result->v.boolV = input->v.boolV;					\
+      _result->v.boolV = _input->v.boolV;					\
       break;								\
     }									\
 } while(0)
 
-#define MAKE_BINOP_EXPR(result,left,right,optype)			\
+#define MAKE_BINOP_EXPR(_result,_left,_right,_optype)			\
     do {								\
-      Operator *_op = (Operator *) malloc(sizeof(_op));			\
-      result = (Expr *) malloc(sizeof(Expr));				\
-      result->type = EXPR_OP;						\
-      result->expr.op = _op;						\
-      _op->type = optype;						\
+      Operator *_op = (Operator *) malloc(sizeof(Operator));		\
+      _result = (Expr *) malloc(sizeof(Expr));				\
+      _result->type = EXPR_OP;						\
+      _result->expr.op = _op;						\
+      _op->type = _optype;						\
       _op->args = (Expr **) malloc(2 * sizeof(Expr*));			\
-      _op->args[0] = left;						\
-      _op->args[1] = right;						\
+      _op->args[0] = _left;						\
+      _op->args[1] = _right;						\
     } while (0)
 
-#define MAKE_UNOP_EXPR(result,input,optype)				\
+#define MAKE_UNOP_EXPR(_result,_input,_optype)				\
   do {									\
-    Operator *op = (Operator *) malloc(sizeof(op));			\
-    result = (Expr *) malloc(sizeof(Expr));				\
-    result->type = optype;						\
-    result->expr.op = op;						\
-    op->args = (Expr **) malloc(sizeof(Expr*));				\
-    op->args[0] = input;						\
+    Operator *_op = (Operator *) malloc(sizeof(Operator));		\
+    _result = (Expr *) malloc(sizeof(Expr));				\
+    _result->type = EXPR_OP;						\
+    _result->expr.op = _op;						\
+    _op->type = _optype;						\
+    _op->args = (Expr **) malloc(sizeof(Expr*));			\
+    _op->args[0] = _input;						\
   } while (0)
 
-#define MAKE_ATTRREF(result,attr)					\
+#define MAKE_ATTRREF(_result,_attr)					\
   do {									\
-  result = (Expr *) malloc(sizeof(Expr));				\
-  result->type = EXPR_ATTRREF;						\
-  result->expr.attrRef = attr;						\
+    _result = (Expr *) malloc(sizeof(Expr));				\
+    _result->type = EXPR_ATTRREF;					\
+    _result->expr.attrRef = _attr;					\
   } while(0)
 
-#define MAKE_CONS(result,value)						\
+#define MAKE_CONS(_result,_value)					\
   do {									\
-    result = (Expr *) malloc(sizeof(Expr));				\
-    result->type = EXPR_CONST;						\
-    result->expr.cons = value;						\
+    _result = (Expr *) malloc(sizeof(Expr));				\
+    _result->type = EXPR_CONST;						\
+    _result->expr.cons = _value;					\
   } while(0)
 
 
