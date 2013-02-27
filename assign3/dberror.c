@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+char *RC_message;
+
 /* print a message to standard out describing the error */
 void 
 printError (RC error)
@@ -26,7 +28,6 @@ errorMessage (RC error)
     }
   else
     {
-
       message = (char *) malloc(30);
       sprintf(message, "EC (%i)\n", error);
     }
