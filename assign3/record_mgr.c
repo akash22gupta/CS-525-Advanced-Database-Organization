@@ -14,19 +14,19 @@ createTable (char *name, Schema *schema)
 }
 
 RC
-openTable (TableData *rel, char *name)
+openTable (RM_TableData *rel, char *name)
 {
   return RC_OK;
 }
 
 RC
-closeTable (TableData *rel)
+closeTable (RM_TableData *rel)
 {
   return RC_OK;
 }
 
 RC
-getNumTuples (TableData *rel)
+getNumTuples (RM_TableData *rel)
 {
   return RC_OK;
 }
@@ -34,7 +34,7 @@ getNumTuples (TableData *rel)
 // handling records in a table
 
 RC
-insertRecord (TableData *rel, char *data, Record *record)
+insertRecord (RM_TableData *rel, char *data, Record *record)
 {
   return RC_OK;
 }
@@ -46,13 +46,13 @@ deleteRecord (RID *id)
 }
 
 RC
-updateRecord (TableData *rel, Record *record)
+updateRecord (RM_TableData *rel, Record *record)
 {
   return RC_OK;
 }
 
 RC
-getRecord (TableData *rel, RID *id, Record *record)
+getRecord (RM_TableData *rel, RID *id, Record *record)
 {
   return RC_OK;
 }
@@ -60,19 +60,19 @@ getRecord (TableData *rel, RID *id, Record *record)
 // scans
 
 RC
-startScan (TableData *rel, ScanHandle *scan, Expr *cond)
+startScan (RM_TableData *rel, RM_ScanHandle *scan, Expr *cond)
 {
   return RC_OK;
 }
 
 RC
-next (ScanHandle *scan, Record *record)
+next (RM_ScanHandle *scan, Record *record)
 {
   return RC_OK;
 }
 
 RC
-closeScan (ScanHandle *scan)
+closeScan (RM_ScanHandle *scan)
 {
   return RC_OK;
 }

@@ -72,7 +72,7 @@ static RC attrOffset (Schema *schema, int attrNum, int *result);
 
 // implementations
 char *
-serializeTableInfo(TableData *rel)
+serializeTableInfo(RM_TableData *rel)
 {
   VarString *result;
   MAKE_VARSTRING(result);
@@ -84,11 +84,11 @@ serializeTableInfo(TableData *rel)
 }
 
 char * 
-serializeTableContent(TableData *rel)
+serializeTableContent(RM_TableData *rel)
 {
   int i;
   VarString *result;
-  ScanHandle *sc = (ScanHandle *) malloc(sizeof(ScanHandle));
+  RM_ScanHandle *sc = (RM_ScanHandle *) malloc(sizeof(RM_ScanHandle));
   Record *r = (Record *) malloc(sizeof(Record));
   MAKE_VARSTRING(result);
 
@@ -140,6 +140,8 @@ serializeSchema(Schema *schema)
 
   APPEND_STRING(result," with keys: (");
 
+  for(i = 0; i < schema->keySize; i++)
+    APPEND(result, "%s%s", ((i != 0) ? ", ": ""), schema->attrNames[schema->keyAttrs[i]]); 
 
   APPEND_STRING(result,")\n");
 

@@ -40,43 +40,44 @@ typedef struct Schema
   DataType *dataTypes;
   int *typeLength;
   int *keyAttrs;
+  int keySize;
 } Schema;
 
 // TableData: Management Structure for a Record Manager to handle one relation
-typedef struct TableData
+typedef struct RM_TableData
 {
   char *name;
   Schema *schema;
   void *mgmtData;
-} TableData;
+} RM_TableData;
 
 #define MAKE_VALUE(result, datatype, value)				\
   do {									\
-  result = (Value *) malloc(sizeof(Value));				\
-  result->dt = datatype;						\
-  switch(datatype)							\
-{									\
- case DT_INT:								\
-   result->v.intV = value;						\
-   break;								\
- case DT_STRING:							\
-   result->v.stringV = (char *) malloc(strlen(value));			\
-   strcpy(result->v.stringV, value);					\
-   break;								\
- case DT_FLOAT:								\
-   result->v.floatV = value;						\
-   break;								\
- case DT_BOOL:								\
-   result->v.boolV = value;						\
-   break;								\
-}									\
-} while(0)
+    result = (Value *) malloc(sizeof(Value));				\
+    result->dt = datatype;						\
+    switch(datatype)							\
+      {									\
+      case DT_INT:							\
+	result->v.intV = value;						\
+	break;								\
+      case DT_STRING:							\
+	result->v.stringV = (char *) malloc(strlen(value));		\
+	strcpy(result->v.stringV, value);				\
+	break;								\
+      case DT_FLOAT:							\
+	result->v.floatV = value;					\
+	break;								\
+      case DT_BOOL:							\
+	result->v.boolV = value;					\
+	break;								\
+      }									\
+  } while(0)
 
 
 // debug and read methods
 extern Value *stringToValue (char *value);
-extern char *serializeTableInfo(TableData *rel);
-extern char *serializeTableContent(TableData *rel);
+extern char *serializeTableInfo(RM_TableData *rel);
+extern char *serializeTableContent(RM_TableData *rel);
 extern char *serializeSchema(Schema *schema);
 extern char *serializeRecord(Record *record, Schema *schema);
 extern char *serializeAttr(Record *record, Schema *schema, int attrNum);

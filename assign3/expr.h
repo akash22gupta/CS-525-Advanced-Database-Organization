@@ -34,8 +34,6 @@ typedef struct Operator {
   Expr **args;
 } Operator;
 
-
-
 // expression evaluation methods
 extern RC valueEquals (Value *left, Value *right, Value *result);
 extern RC valueSmaller (Value *left, Value *right, Value *result);
@@ -50,7 +48,7 @@ extern void freeVal(Value *val);
 #define CPVAL(_result,_input)						\
   do {									\
   _result->dt = _input->dt;						\
-  switch(_input->dt)                                                     \
+  switch(_input->dt)							\
     {									\
     case DT_INT:							\
       _result->v.intV = _input->v.intV;					\
@@ -63,7 +61,7 @@ extern void freeVal(Value *val);
       _result->v.floatV = _input->v.floatV;				\
       break;								\
     case DT_BOOL:							\
-      _result->v.boolV = _input->v.boolV;					\
+      _result->v.boolV = _input->v.boolV;				\
       break;								\
     }									\
 } while(0)
