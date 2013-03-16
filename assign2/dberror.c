@@ -26,7 +26,6 @@ errorMessage (RC error)
     }
   else
     {
-
       message = (char *) malloc(30);
       sprintf(message, "EC (%i)\n", error);
     }
