@@ -11,6 +11,9 @@ do
     git checkout "${branch}"
     git pull "${repos}" master
     git merge -m "${MESSAGE}" master
+    git mergetool --tool=emerge
+    find . -name \*.orig -exec rm {} \;
+    git commit -m "${1}"
     git push "${repos}"
 done
 
