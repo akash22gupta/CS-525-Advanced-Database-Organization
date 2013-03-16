@@ -34,7 +34,7 @@ extern RC closeScan (RM_ScanHandle *scan);
 
 // dealing with schemas
 extern int getRecordSize (Schema *schema);
-extern Schema *createSchema (int numAttr, char **attrNames, DataType *dataTypes, int *typeLength, int *keys);
+extern Schema *createSchema (int numAttr, char **attrNames, DataType *dataTypes, int *typeLength, int keySize, int *keys);
 
 // dealing with records and attribute values
 extern RC createRecord (Record *record, Schema *schema);

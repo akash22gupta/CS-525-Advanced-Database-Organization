@@ -278,7 +278,7 @@ testSchema (void)
   int sizes[] = { 0, 4, 0 };
   int keys[] = {0};
 
-  createSchema(3, names, dt, sizes, keys);
+  createSchema(3, names, dt, sizes, 1, keys);
 
   return result;
 }
