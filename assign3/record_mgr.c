@@ -124,7 +124,8 @@ closeScan (RM_ScanHandle *scan)
 
   return RC_OK;
 }
- Schema *createSchema (int numAttr, char **attrNames, DataType *dataTypes, int *typeLength, int *keys)
+
+Schema *createSchema (int numAttr, char **attrNames, DataType *dataTypes, int *typeLength, int keySize, int *keys)
 {
   Schema *result = (Schema *) malloc(sizeof(Schema));
 
@@ -132,6 +133,7 @@ closeScan (RM_ScanHandle *scan)
   result->dataTypes = dataTypes;
   result->typeLength = typeLength;
   result->keyAttrs = keys;
+  result->keySize = keySize;
   
   return RC_OK;
 }
