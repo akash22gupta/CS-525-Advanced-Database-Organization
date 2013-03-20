@@ -176,19 +176,19 @@ testUpdateTable (void)
   for(i = 0; i < numUpdates; i++)
     {
       r = fromTestRecord(schema, updates[i]);
+      r->id = rids[i];
       TEST_CHECK(updateRecord(table,r)); 
     }
 
   TEST_CHECK(closeTable(table));
   TEST_CHECK(openTable(table, "test_table_r"));
 
-  // randomly retrieve records from the table and compare to inserted ones
-
+  // retrieve records from the table and compare to expected final stage
   for(i = 0; i < numFinal; i++)
     {
       RID rid = rids[i];
       TEST_CHECK(getRecord(table, rid, r));
-      ASSERT_EQUALS_RECORDS(fromTestRecord(schema, updates[i]), r, schema, "compare records");
+      ASSERT_EQUALS_RECORDS(fromTestRecord(schema, finalR[i]), r, schema, "compare records");
     }
   
   TEST_CHECK(closeTable(table));
@@ -251,9 +251,15 @@ void testScans (void)
   MAKE_BINOP_EXPR(sel, left, right, OP_COMP_EQUAL);
 
   TEST_CHECK(startScan(table, sc, sel));
-  i = 0;
   while(next(sc, r) != RC_RM_NO_MORE_TUPLES)
-      ASSERT_EQUALS_RECORDS(fromTestRecord(schema, scanOneResult[i++]), r, schema, "compare scan result record");
+    {
+      bool found = FALSE;
+      for(i = 0; i < scanSizeOne; i++)
+	{
+	  found = found && (memcmp(fromTestRecord(schema, scanOneResult[i])->data,r->data,getRecordSize(schema)) == 0);
+	}
+      ASSERT_TRUE(found, "found record in expected scan results");
+    }
   TEST_CHECK(closeScan(sc));
   
   // clean up
