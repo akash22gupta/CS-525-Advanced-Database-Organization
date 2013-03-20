@@ -267,7 +267,6 @@ void testScans (void)
   TEST_CHECK(deleteTable("test_table_r"));
   TEST_CHECK(shutdownRecordManager());
 
-
   free(table);
   free(sc);
   freeExpr(sel);
@@ -305,12 +304,15 @@ testRecord(Schema *schema, int a, char *b, int c)
 
   MAKE_VALUE(value, DT_INT, a);
   TEST_CHECK(setAttr(result, schema, 0, value));
+  freeVal(value);
 
   MAKE_STRING_VALUE(value, b);
-  TEST_CHECK(setAttr(result, schema, 0, value));
+  TEST_CHECK(setAttr(result, schema, 1, value));
+  freeVal(value);
 
   MAKE_VALUE(value, DT_INT, c);
-  TEST_CHECK(setAttr(result, schema, 0, value));
+  TEST_CHECK(setAttr(result, schema, 2, value));
+  freeVal(value);
 
   return result;
 }

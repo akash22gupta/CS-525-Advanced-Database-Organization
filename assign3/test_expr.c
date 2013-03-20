@@ -9,7 +9,7 @@
   do {							\
     Value *result = (Value *) malloc(sizeof(Value));	\
     op(left, right, result);				\
-    bool b = result->v.boolV;			\
+    bool b = result->v.boolV;				\
     free(result);					\
     ASSERT_TRUE(b,message);				\
    } while (0)
@@ -18,7 +18,7 @@
   do {							\
     Value *result = (Value *) malloc(sizeof(Value));	\
     op(left, right, result);				\
-    bool b = result->v.boolV;			\
+    bool b = result->v.boolV;				\
     free(result);					\
     ASSERT_TRUE(!b,message);				\
    } while (0)
