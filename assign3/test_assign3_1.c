@@ -51,6 +51,8 @@ main (void)
   testCreateTableAndInsert();
   testUpdateTable();
   testScans();
+
+  return 0;
 }
 
 // ************************************************************ 
@@ -202,7 +204,7 @@ testUpdateTable (void)
 
 void testScans (void)
 {
-  RM_TableData *table;
+  RM_TableData *table = (RM_TableData *) malloc(sizeof(RM_TableData));
   TestRecord inserts[] = { 
     {1, "aaaa", 3}, 
     {2, "bbbb", 2},
@@ -256,7 +258,7 @@ void testScans (void)
       bool found = FALSE;
       for(i = 0; i < scanSizeOne; i++)
 	{
-	  found = found && (memcmp(fromTestRecord(schema, scanOneResult[i])->data,r->data,getRecordSize(schema)) == 0);
+	  found = found || (memcmp(fromTestRecord(schema, scanOneResult[i])->data,r->data,getRecordSize(schema)) == 0);
 	}
       ASSERT_TRUE(found, "found record in expected scan results");
     }
