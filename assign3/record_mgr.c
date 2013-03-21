@@ -103,7 +103,7 @@ closeScan (RM_ScanHandle *scan)
 }
 
 // dealing with schemas
- int getRecordSize (Schema *schema)
+int getRecordSize (Schema *schema)
 {
   int i, size = 0;
   
@@ -126,7 +126,7 @@ closeScan (RM_ScanHandle *scan)
 	}
     }
 
-  return RC_OK;
+  return size;
 }
 
 Schema *createSchema (int numAttr, char **attrNames, DataType *dataTypes, int *typeLength, int keySize, int *keys)
@@ -207,6 +207,7 @@ getAttr (Record *record, Schema *schema, int attrNum, Value **value)
 	result->v.stringV = (char *) malloc(len + 1);
 	strncpy(result->v.stringV, attrData, len);
 	result->v.stringV[len] = '\0';
+	result->dt = DT_STRING;
       }
       break;
     case DT_FLOAT:
