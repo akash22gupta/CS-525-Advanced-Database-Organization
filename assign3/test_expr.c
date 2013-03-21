@@ -39,6 +39,8 @@ main (void)
   testValueSerialize();
   testOperators();
   testExpressions();
+
+  return 0;
 }
 
 // ************************************************************ 
