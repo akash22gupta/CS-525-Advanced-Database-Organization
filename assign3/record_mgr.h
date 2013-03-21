@@ -19,7 +19,7 @@ extern RC createTable (char *name, Schema *schema);
 extern RC openTable (RM_TableData *rel, char *name);
 extern RC closeTable (RM_TableData *rel);
 extern RC deleteTable (char *name);
-extern RC getNumTuples (RM_TableData *rel);
+extern int getNumTuples (RM_TableData *rel);
 
 // handling records in a table
 extern RC insertRecord (RM_TableData *rel, Record *record);
