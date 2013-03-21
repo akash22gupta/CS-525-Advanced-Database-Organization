@@ -93,7 +93,6 @@ evalExpr (Record *record, Schema *schema, Expr *expr, Value *result)
 {
   Value *lIn;
   Value *rIn;
-  int rc = RC_OK;
 
   switch(expr->type)
     {

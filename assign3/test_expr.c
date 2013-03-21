@@ -45,7 +45,6 @@ main (void)
 void
 testValueSerialize (void)
 {
-  Value *newVal;
   testName = "test value serialization and deserialization";
 
   ASSERT_EQUALS_STRING(serializeValue(stringToValue("i10")), "10", "create Value 10");
@@ -61,7 +60,7 @@ testValueSerialize (void)
 void
 testOperators (void)
 {
-  Value *l, *r, *result;
+  Value *result;
   testName = "test value comparison and boolean operators";
   MAKE_VALUE(result, DT_INT, 0);
   
