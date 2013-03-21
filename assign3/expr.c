@@ -89,10 +89,11 @@ boolOr (Value *left, Value *right, Value *result)
 }
 
 RC
-evalExpr (Record *record, Schema *schema, Expr *expr, Value *result)
+evalExpr (Record *record, Schema *schema, Expr *expr, Value **result)
 {
   Value *lIn;
   Value *rIn;
+  *result = (Value *) malloc(sizeof(Value));
 
   switch(expr->type)
     {
@@ -100,29 +101,29 @@ evalExpr (Record *record, Schema *schema, Expr *expr, Value *result)
       {
       Operator *op = expr->expr.op;
       bool twoArgs = (op->type != OP_BOOL_NOT);
-      lIn = (Value *) malloc(sizeof(Value));
-      rIn = (Value *) malloc(sizeof(Value));
+      //      lIn = (Value *) malloc(sizeof(Value));
+      //    rIn = (Value *) malloc(sizeof(Value));
       
-      CHECK(evalExpr(record, schema, op->args[0], lIn));
+      CHECK(evalExpr(record, schema, op->args[0], &lIn));
       if (twoArgs)
-	CHECK(evalExpr(record, schema, op->args[1], rIn));
+	CHECK(evalExpr(record, schema, op->args[1], &rIn));
 
       switch(op->type) 
 	{
 	case OP_BOOL_NOT:
-	  CHECK(boolNot(lIn, result));
+	  CHECK(boolNot(lIn, *result));
 	  break;
 	case OP_BOOL_AND:
-	  CHECK(boolAnd(lIn, rIn, result));
+	  CHECK(boolAnd(lIn, rIn, *result));
 	  break;
 	case OP_BOOL_OR:
-	  CHECK(boolOr(lIn, rIn, result));
+	  CHECK(boolOr(lIn, rIn, *result));
 	  break;
 	case OP_COMP_EQUAL:
-	  CHECK(valueEquals(lIn, rIn, result));
+	  CHECK(valueEquals(lIn, rIn, *result));
 	  break;
 	case OP_COMP_SMALLER:
-	  CHECK(valueSmaller(lIn, rIn, result));
+	  CHECK(valueSmaller(lIn, rIn, *result));
 	  break;
 	default:
 	  break;
@@ -135,9 +136,10 @@ evalExpr (Record *record, Schema *schema, Expr *expr, Value *result)
       }
       break;
     case EXPR_CONST:
-      CPVAL(result,expr->expr.cons);
+      CPVAL(*result,expr->expr.cons);
       break;
     case EXPR_ATTRREF:
+      freeVal(*result);
       CHECK(getAttr(record, schema, expr->expr.attrRef, result));
       break;
     }

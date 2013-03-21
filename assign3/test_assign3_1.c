@@ -21,8 +21,17 @@
     ASSERT_TRUE(0, message);						\
   } while(0)
 
+#define OP_TRUE(left, right, op, message)		\
+  do {							\
+    Value *result = (Value *) malloc(sizeof(Value));	\
+    op(left, right, result);				\
+    bool b = result->v.boolV;				\
+    free(result);					\
+    ASSERT_TRUE(b,message);				\
+   } while (0)
 
 // test methods
+static void testRecords (void);
 static void testCreateTableAndInsert (void);
 static void testUpdateTable (void);
 static void testScans (void);
@@ -48,11 +57,50 @@ main (void)
 {
   testName = "";
 
+  testRecords();
   testCreateTableAndInsert();
   testUpdateTable();
   testScans();
 
   return 0;
+}
+
+// ************************************************************ 
+void
+testRecords (void)
+{
+  TestRecord expected[] = { 
+    {1, "aaaa", 3}, 
+  };
+  Schema *schema;
+  Record *r;
+  Value *value;
+  testName = "test creating records and manipulating attributes";
+
+  // check attributes of created record
+  schema = testSchema();
+  r = fromTestRecord(schema, expected[0]);
+
+  getAttr(r, schema, 0, &value);
+  OP_TRUE(stringToValue("i1"), value, valueEquals, "first attr");
+  freeVal(value);
+
+  getAttr(r, schema, 1, &value);
+  OP_TRUE(stringToValue("saaaa"), value, valueEquals, "second attr");
+  freeVal(value);
+
+  getAttr(r, schema, 2, &value);
+  OP_TRUE(stringToValue("i3"), value, valueEquals, "third attr");
+  freeVal(value);
+
+  //modify attrs
+  setAttr(r, schema, 2, stringToValue("i4"));
+  getAttr(r, schema, 2, &value);
+  OP_TRUE(stringToValue("i4"), value, valueEquals, "third attr after setting");
+  freeVal(value);
+
+  freeRecord(r);
+  TEST_DONE();
 }
 
 // ************************************************************ 
@@ -230,6 +278,7 @@ void testScans (void)
   Schema *schema;
   RM_ScanHandle *sc = (RM_ScanHandle *) malloc(sizeof(RM_ScanHandle));
   Expr *sel, *left, *right;
+  int rc;
 
   testName = "test creating a new table and inserting tuples";
   schema = testSchema();
@@ -256,7 +305,7 @@ void testScans (void)
   MAKE_BINOP_EXPR(sel, left, right, OP_COMP_EQUAL);
 
   TEST_CHECK(startScan(table, sc, sel));
-  while(next(sc, r) != RC_RM_NO_MORE_TUPLES)
+  while((rc = next(sc, r)) == RC_OK)
     {
       for(i = 0; i < scanSizeOne; i++)
 	{
@@ -264,6 +313,8 @@ void testScans (void)
 	      foundScan[i] = TRUE;
 	}
     }
+  if (rc != RC_RM_NO_MORE_TUPLES)
+    TEST_CHECK(rc);
   TEST_CHECK(closeScan(sc));
   for(i = 0; i < scanSizeOne; i++)
     ASSERT_TRUE(foundScan[i], "check for scan result");
@@ -284,12 +335,26 @@ Schema *
 testSchema (void)
 {
   Schema *result;
-  char * names[] = { "a", "b", "c" };
+  char *names[] = { "a", "b", "c" };
   DataType dt[] = { DT_INT, DT_STRING, DT_INT };
   int sizes[] = { 0, 4, 0 };
   int keys[] = {0};
+  int i;
+  char **cpNames = (char **) malloc(sizeof(char*) * 3);
+  DataType *cpDt = (DataType *) malloc(sizeof(DataType) * 3);
+  int *cpSizes = (int *) malloc(sizeof(int) * 3);
+  int *cpKeys = (int *) malloc(sizeof(int));
 
-  result = createSchema(3, names, dt, sizes, 1, keys);
+  for(i = 0; i < 3; i++)
+    {
+      cpNames[i] = (char *) malloc(2);
+      strcpy(cpNames[i], names[i]);
+    }
+  memcpy(cpDt, dt, sizeof(DataType) * 3);
+  memcpy(cpSizes, sizes, sizeof(int) * 3);
+  memcpy(cpKeys, keys, sizeof(int));
+
+  result = createSchema(3, cpNames, cpDt, cpSizes, 1, cpKeys);
 
   return result;
 }
@@ -303,10 +368,10 @@ fromTestRecord (Schema *schema, TestRecord in)
 Record *
 testRecord(Schema *schema, int a, char *b, int c)
 {
-  Record *result = (Record *) malloc(sizeof(Record));
+  Record *result;
   Value *value;
 
-  TEST_CHECK(createRecord(result, schema));
+  TEST_CHECK(createRecord(&result, schema));
 
   MAKE_VALUE(value, DT_INT, a);
   TEST_CHECK(setAttr(result, schema, 0, value));
