@@ -51,6 +51,8 @@ main (void)
   testCreateTableAndInsert();
   testUpdateTable();
   testScans();
+
+  return 0;
 }
 
 // ************************************************************ 
@@ -202,7 +204,7 @@ testUpdateTable (void)
 
 void testScans (void)
 {
-  RM_TableData *table;
+  RM_TableData *table = (RM_TableData *) malloc(sizeof(RM_TableData));
   TestRecord inserts[] = { 
     {1, "aaaa", 3}, 
     {2, "bbbb", 2},
@@ -218,6 +220,10 @@ void testScans (void)
   TestRecord scanOneResult[] = { 
     {3, "cccc", 1},
     {6, "ffff", 1},
+  };
+  bool foundScan[] = {
+    FALSE,
+    FALSE
   };
   int numInserts = 10, scanSizeOne = 2, i;
   Record *r;
@@ -253,14 +259,15 @@ void testScans (void)
   TEST_CHECK(startScan(table, sc, sel));
   while(next(sc, r) != RC_RM_NO_MORE_TUPLES)
     {
-      bool found = FALSE;
       for(i = 0; i < scanSizeOne; i++)
 	{
-	  found = found && (memcmp(fromTestRecord(schema, scanOneResult[i])->data,r->data,getRecordSize(schema)) == 0);
+	  if (memcmp(fromTestRecord(schema, scanOneResult[i])->data,r->data,getRecordSize(schema)) == 0)
+	      foundScan[i] = TRUE;
 	}
-      ASSERT_TRUE(found, "found record in expected scan results");
     }
   TEST_CHECK(closeScan(sc));
+  for(i = 0; i < scanSizeOne; i++)
+    ASSERT_TRUE(foundScan[i], "check for scan result");
   
   // clean up
   TEST_CHECK(closeTable(table));
@@ -283,7 +290,7 @@ testSchema (void)
   int sizes[] = { 0, 4, 0 };
   int keys[] = {0};
 
-  createSchema(3, names, dt, sizes, 1, keys);
+  result = createSchema(3, names, dt, sizes, 1, keys);
 
   return result;
 }
