@@ -11,7 +11,7 @@ do
     git checkout "${branch}"
     git pull "${repos}" master
     git merge -m "${MESSAGE}" master
-    git mergetool --tool=emerge
+    git mergetool --tool=keepremote -y
     find . -name \*.orig -exec rm {} \;
     git commit -m "${1}"
     git push "${repos}"
