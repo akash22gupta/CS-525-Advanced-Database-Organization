@@ -48,10 +48,10 @@ deleteTable (char *name)
   return RC_OK;
 }
 
-RC
+int
 getNumTuples (RM_TableData *rel)
 {
-  return RC_OK;
+  return -1;
 }
 
 // handling records in a table
