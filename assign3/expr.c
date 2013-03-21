@@ -139,7 +139,7 @@ evalExpr (Record *record, Schema *schema, Expr *expr, Value **result)
       CPVAL(*result,expr->expr.cons);
       break;
     case EXPR_ATTRREF:
-      freeVal(*result);
+      free(*result);
       CHECK(getAttr(record, schema, expr->expr.attrRef, result));
       break;
     }
