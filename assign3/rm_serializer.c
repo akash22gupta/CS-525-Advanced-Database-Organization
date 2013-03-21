@@ -207,6 +207,13 @@ serializeAttr(Record *record, Schema *schema, int attrNum)
 	APPEND(result, "%s:%f", schema->attrNames[attrNum], val);
       }
       break;
+    case DT_BOOL:
+      {
+	bool val;
+	memcpy(&val,attrData, sizeof(bool));
+	APPEND(result, "%s:%s", schema->attrNames[attrNum], val ? "TRUE" : "FALSE");
+      }
+      break;
     default:
       return "NO SERIALIZER FOR DATATYPE";
     }

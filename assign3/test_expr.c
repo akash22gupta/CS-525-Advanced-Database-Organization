@@ -93,28 +93,28 @@ void
 testExpressions (void)
 {
   Expr *op, *l, *r;
-  Value *res = (Value *) malloc(sizeof(Value));
+  Value *res;
   testName = "test complex expressions";
   
   MAKE_CONS(l, stringToValue("i10"));
-  evalExpr(NULL, NULL, l, res);
+  evalExpr(NULL, NULL, l, &res);
   OP_TRUE(stringToValue("i10"), res, valueEquals, "Const 10");
  
   MAKE_CONS(r, stringToValue("i20"));
-  evalExpr(NULL, NULL, r, res);
+  evalExpr(NULL, NULL, r, &res);
   OP_TRUE(stringToValue("i20"), res, valueEquals, "Const 20");
 
   MAKE_BINOP_EXPR(op, l, r, OP_COMP_SMALLER);
-  evalExpr(NULL, NULL, op, res);
+  evalExpr(NULL, NULL, op, &res);
   OP_TRUE(stringToValue("bt"), res, valueEquals, "Const 10 < Const 20");
 
   MAKE_CONS(l, stringToValue("bt"));
-  evalExpr(NULL, NULL, l, res);
+  evalExpr(NULL, NULL, l, &res);
   OP_TRUE(stringToValue("bt"), res, valueEquals, "Const true");
 
   r = op;
   MAKE_BINOP_EXPR(op, r, l, OP_BOOL_AND);
-  evalExpr(NULL, NULL, op, res);
+  evalExpr(NULL, NULL, op, &res);
   OP_TRUE(stringToValue("bt"), res, valueEquals, "(Const 10 < Const 20) AND true");
 
   TEST_DONE();

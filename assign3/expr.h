@@ -40,28 +40,28 @@ extern RC valueSmaller (Value *left, Value *right, Value *result);
 extern RC boolNot (Value *input, Value *result);
 extern RC boolAnd (Value *left, Value *right, Value *result);
 extern RC boolOr (Value *left, Value *right, Value *result);
-extern RC evalExpr (Record *record, Schema *schema, Expr *expr, Value *result);
+extern RC evalExpr (Record *record, Schema *schema, Expr *expr, Value **result);
 extern RC freeExpr (Expr *expr);
 extern void freeVal(Value *val);
 
 
 #define CPVAL(_result,_input)						\
   do {									\
-  _result->dt = _input->dt;						\
+    (_result)->dt = _input->dt;						\
   switch(_input->dt)							\
     {									\
     case DT_INT:							\
-      _result->v.intV = _input->v.intV;					\
+      (_result)->v.intV = _input->v.intV;					\
       break;								\
     case DT_STRING:							\
-      _result->v.stringV = (char *) malloc(strlen(_input->v.stringV));	\
-      strcpy(_result->v.stringV, _input->v.stringV);			\
+      (_result)->v.stringV = (char *) malloc(strlen(_input->v.stringV));	\
+      strcpy((_result)->v.stringV, _input->v.stringV);			\
       break;								\
     case DT_FLOAT:							\
-      _result->v.floatV = _input->v.floatV;				\
+      (_result)->v.floatV = _input->v.floatV;				\
       break;								\
     case DT_BOOL:							\
-      _result->v.boolV = _input->v.boolV;				\
+      (_result)->v.boolV = _input->v.boolV;				\
       break;								\
     }									\
 } while(0)
