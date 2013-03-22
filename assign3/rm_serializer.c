@@ -270,6 +270,10 @@ stringToValue(char *val)
       result->dt = DT_BOOL;
       result->v.boolV = (val[1] == 't') ? TRUE : FALSE;
       break;
+    default:
+      result->dt = DT_INT;
+      result->v.intV = -1;
+      break;
     }
   
   return result;
