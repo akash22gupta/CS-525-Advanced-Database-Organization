@@ -93,7 +93,7 @@ evalExpr (Record *record, Schema *schema, Expr *expr, Value **result)
 {
   Value *lIn;
   Value *rIn;
-  *result = (Value *) malloc(sizeof(Value));
+  MAKE_VALUE(*result, DT_INT, -1);
 
   switch(expr->type)
     {
@@ -139,7 +139,7 @@ evalExpr (Record *record, Schema *schema, Expr *expr, Value **result)
       CPVAL(*result,expr->expr.cons);
       break;
     case EXPR_ATTRREF:
-      freeVal(*result);
+      free(*result);
       CHECK(getAttr(record, schema, expr->expr.attrRef, result));
       break;
     }

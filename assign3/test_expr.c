@@ -7,7 +7,8 @@
 // helper macros
 #define OP_TRUE(left, right, op, message)		\
   do {							\
-    Value *result = (Value *) malloc(sizeof(Value));	\
+    Value *result;					\
+    MAKE_VALUE(result, DT_INT, -1);			\
     op(left, right, result);				\
     bool b = result->v.boolV;				\
     free(result);					\
@@ -16,7 +17,8 @@
 
 #define OP_FALSE(left, right, op, message)		\
   do {							\
-    Value *result = (Value *) malloc(sizeof(Value));	\
+    Value *result;					\
+    MAKE_VALUE(result, DT_INT, -1);			\
     op(left, right, result);				\
     bool b = result->v.boolV;				\
     free(result);					\
@@ -39,6 +41,8 @@ main (void)
   testValueSerialize();
   testOperators();
   testExpressions();
+
+  return 0;
 }
 
 // ************************************************************ 
@@ -73,7 +77,7 @@ testOperators (void)
 
   // smaller
   OP_TRUE(stringToValue("i3"),stringToValue("i10"), valueSmaller, "3 < 10");
-  OP_TRUE(stringToValue("f5.0"),stringToValue("F6.5"), valueSmaller, "5.0 < 6.5");
+  OP_TRUE(stringToValue("f5.0"),stringToValue("f6.5"), valueSmaller, "5.0 < 6.5");
 
   // boolean
   OP_TRUE(stringToValue("bt"),stringToValue("bt"), boolAnd, "t AND t = t");
