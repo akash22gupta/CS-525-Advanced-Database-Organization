@@ -212,7 +212,7 @@ testIndexScan (void)
   testName = "random insertion order and scan";
   int i, testint, iter, rc;
   BTreeHandle *tree = NULL;
-  BT_ScanHandle *sc;
+  BT_ScanHandle *sc = NULL;
   RID rid;
   
   keys = createValues(stringKeys, numInserts);
