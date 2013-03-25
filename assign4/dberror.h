@@ -40,7 +40,7 @@ extern char *errorMessage (RC error);
     return rc;		  \
   } while (0)		  \
 
-// check the return code and exit if it's and error
+// check the return code and exit if it is an error
 #define CHECK(code)							\
   do {									\
     int rc_internal = (code);						\

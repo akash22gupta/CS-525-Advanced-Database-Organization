@@ -24,7 +24,7 @@ extern RC shutdownIndexManager ();
 extern RC createBtree (char *idxId, DataType keyType, int n);
 extern RC openBtree (BTreeHandle **tree, char *idxId);
 extern RC closeBtree (BTreeHandle *tree);
-extern RC deleteBtree (BTreeHandle *tree);
+extern RC deleteBtree (char *idxId);
 
 // access information about a b-tree
 extern RC getNumNodes (BTreeHandle *tree, int *result);

@@ -2,51 +2,24 @@
 
 #include "dberror.h"
 #include "expr.h"
-#include "record_mgr.h"
+#include "btree_mgr.h"
 #include "tables.h"
 #include "test_helper.h"
 
-#define ASSERT_EQUALS_RECORDS(_l,_r, schema, message)			\
+#define ASSERT_EQUALS_RID(_l,_r, message)				\
   do {									\
-    ASSERT_TRUE(memcmp(_l->data,_r->data,getRecordSize(schema)) == 0, message);	\
+    ASSERT_TRUE((_l).page == (_r).page && (_l).slot == (_r).slot, message); \
   } while(0)
-
-#define ASSERT_EQUALS_RECORD_IN(_l,_r, rSize, schema, message)		\
-  do {									\
-    int i;								\
-    boolean found = false;						\
-    for(i = 0; i < rSize; i++)						\
-      if (memcmp(_l->data,_r[i]->data,getRecordSize(schema)) == 0)	\
-	found = true;							\
-    ASSERT_TRUE(0, message);						\
-  } while(0)
-
-#define OP_TRUE(left, right, op, message)		\
-  do {							\
-    Value *result = (Value *) malloc(sizeof(Value));	\
-    op(left, right, result);				\
-    bool b = result->v.boolV;				\
-    free(result);					\
-    ASSERT_TRUE(b,message);				\
-   } while (0)
 
 // test methods
-static void testRecords (void);
-static void testCreateTableAndInsert (void);
-static void testUpdateTable (void);
-static void testScans (void);
-
-// struct for test records
-typedef struct TestRecord {
-  int a;
-  char *b;
-  int c;
-} TestRecord;
+static void testInsertAndFind (void);
+static void testDelete (void);
+static void testIndexScan (void);
 
 // helper methods
-Record *testRecord(Schema *schema, int a, char *b, int c);
-Schema *testSchema (void);
-Record *fromTestRecord (Schema *schema, TestRecord in);
+static Value **createValues (char **stringVals, int size);
+static void freeValues (Value **vals, int size);
+static int *createPermutation (int size);
 
 // test name
 char *testName;
@@ -57,333 +30,280 @@ main (void)
 {
   testName = "";
 
-  testRecords();
-  testCreateTableAndInsert();
-  testUpdateTable();
-  testScans();
+  testInsertAndFind();
+  testDelete();
+  testIndexScan();
 
   return 0;
 }
 
 // ************************************************************ 
 void
-testRecords (void)
+testInsertAndFind (void)
 {
-  TestRecord expected[] = { 
-    {1, "aaaa", 3}, 
+  RID insert[] = { 
+    {1,1},
+    {2,3},
+    {1,2},
+    {3,5},
+    {4,4},
+    {3,2}, 
   };
-  Schema *schema;
-  Record *r;
-  Value *value;
-  testName = "test creating records and manipulating attributes";
+  int numInserts = 6;
+  Value **keys;
+  char *stringKeys[] = {
+    "i1",
+    "i11",
+    "i13",
+    "i17",
+    "i23",
+    "i52"
+  };
+  testName = "test b-tree inserting and search";
+  int i, testint;
+  BTreeHandle *tree = NULL;
+  
+  keys = createValues(stringKeys, numInserts);
 
-  // check attributes of created record
-  schema = testSchema();
-  r = fromTestRecord(schema, expected[0]);
+  // init
+  TEST_CHECK(initIndexManager(NULL));
+  TEST_CHECK(createBtree("testidx", DT_INT, 2));
+  TEST_CHECK(openBtree(&tree, "textidx"));
 
-  getAttr(r, schema, 0, &value);
-  OP_TRUE(stringToValue("i1"), value, valueEquals, "first attr");
-  freeVal(value);
+  // insert keys
+  for(i = 0; i < numInserts; i++)
+    TEST_CHECK(insertKey(tree, keys[i], insert[i]));
 
-  getAttr(r, schema, 1, &value);
-  OP_TRUE(stringToValue("saaaa"), value, valueEquals, "second attr");
-  freeVal(value);
+  // check index stats
+  ASSERT_EQUALS_INT(getNumNodes(tree, &testint),4,"number of nodes in btree");
+  ASSERT_EQUALS_INT(getNumEntries(tree, &testint),numInserts,"number of entries in btree");
 
-  getAttr(r, schema, 2, &value);
-  OP_TRUE(stringToValue("i3"), value, valueEquals, "third attr");
-  freeVal(value);
+  // search for keys
+  for(i = 0; i < 1000; i++)
+    {
+      int pos = rand() % numInserts;
+      RID rid;
+      Value *key = keys[pos];
 
-  //modify attrs
-  setAttr(r, schema, 2, stringToValue("i4"));
-  getAttr(r, schema, 2, &value);
-  OP_TRUE(stringToValue("i4"), value, valueEquals, "third attr after setting");
-  freeVal(value);
+      TEST_CHECK(findKey(tree, key, &rid));
+      ASSERT_EQUALS_RID(insert[pos], rid, "did we find the correct RID?");
+    }
 
-  freeRecord(r);
+  // cleanup
+  TEST_CHECK(closeBtree(tree));
+  TEST_CHECK(deleteBtree("testidx"));
+  TEST_CHECK(shutdownIndexManager());
+  freeValues(keys, numInserts);
+
   TEST_DONE();
 }
 
 // ************************************************************ 
 void
-testCreateTableAndInsert (void)
+testDelete (void)
 {
-  RM_TableData *table = (RM_TableData *) malloc(sizeof(RM_TableData));
-  TestRecord inserts[] = { 
-    {1, "aaaa", 3}, 
-    {2, "bbbb", 2},
-    {3, "cccc", 1},
-    {4, "dddd", 3},
-    {5, "eeee", 5},
-    {6, "ffff", 1},
-    {7, "gggg", 3},
-    {8, "hhhh", 3},
-    {9, "iiii", 2}
+  RID insert[] = { 
+    {1,1},
+    {2,3},
+    {1,2},
+    {3,5},
+    {4,4},
+    {3,2}, 
   };
-  int numInserts = 9, i;
-  Record *r;
-  RID *rids;
-  Schema *schema;
-  testName = "test creating a new table and inserting tuples";
-  schema = testSchema();
-  rids = (RID *) malloc(sizeof(RID) * numInserts);
-  
-  TEST_CHECK(initRecordManager(NULL));
-  TEST_CHECK(createTable("test_table_r",schema));
-  TEST_CHECK(openTable(table, "test_table_r"));
-  
-  // insert rows into table
-  for(i = 0; i < numInserts; i++)
-    {
-      r = fromTestRecord(schema, inserts[i]);
-      TEST_CHECK(insertRecord(table,r)); 
-      rids[i] = r->id;
-    }
-
-  TEST_CHECK(closeTable(table));
-  TEST_CHECK(openTable(table, "test_table_r"));
-
-  // randomly retrieve records from the table and compare to inserted ones
-  for(i = 0; i < 1000; i++)
-    {
-      int pos = rand() % numInserts;
-      RID rid = rids[pos];
-      TEST_CHECK(getRecord(table, rid, r));
-      ASSERT_EQUALS_RECORDS(fromTestRecord(schema, inserts[pos]), r, schema, "compare records");
-    }
-  
-  TEST_CHECK(closeTable(table));
-  TEST_CHECK(deleteTable("test_table_r"));
-  TEST_CHECK(shutdownRecordManager());
-
-  free(rids);
-  free(table);
-  TEST_DONE();
-}
-
-void 
-testUpdateTable (void)
-{
-  RM_TableData *table = (RM_TableData *) malloc(sizeof(RM_TableData));
-  TestRecord inserts[] = { 
-    {1, "aaaa", 3}, 
-    {2, "bbbb", 2},
-    {3, "cccc", 1},
-    {4, "dddd", 3},
-    {5, "eeee", 5},
-    {6, "ffff", 1},
-    {7, "gggg", 3},
-    {8, "hhhh", 3},
-    {9, "iiii", 2},
-    {10, "jjjj", 5},
+  int numInserts = 6;
+  Value **keys;
+  char *stringKeys[] = {
+    "i1",
+    "i11",
+    "i13",
+    "i17",
+    "i23",
+    "i52"
   };
-  TestRecord updates[] = {
-    {1, "iiii", 6},
-    {2, "iiii", 6},
-    {3, "iiii", 6}
-  };
-  int deletes[] = {
-    9,
-    6,
-    7,
-    8,
-    5
-  };
-  TestRecord finalR[] = {
-    {1, "iiii", 6},
-    {2, "iiii", 6},
-    {3, "iiii", 6},
-    {4, "dddd", 3},
-    {5, "eeee", 5},
-  };
-  int numInserts = 10, numUpdates = 3, numDeletes = 5, numFinal = 5, i;
-  Record *r;
-  RID *rids;
-  Schema *schema;
-  testName = "test creating a new table and inserting tuples";
-  schema = testSchema();
-  rids = (RID *) malloc(sizeof(RID) * numInserts);
+  testName = "test b-tree inserting and search";
+  int i, iter;
+  BTreeHandle *tree = NULL;
+  int numDeletes = 3;
+  bool *deletes = (bool *) malloc(numInserts * sizeof(bool));
   
-  TEST_CHECK(initRecordManager(NULL));
-  TEST_CHECK(createTable("test_table_r",schema));
-  TEST_CHECK(openTable(table, "test_table_r"));
-  
-  // insert rows into table
-  for(i = 0; i < numInserts; i++)
+  keys = createValues(stringKeys, numInserts);
+
+  // init
+  TEST_CHECK(initIndexManager(NULL));
+
+  // create test b-tree and randomly remove entries
+  for(iter = 0; iter < 50; iter++)
     {
-      r = fromTestRecord(schema, inserts[i]);
-      TEST_CHECK(insertRecord(table,r)); 
-      rids[i] = r->id;
-    }
+      // randomly select entries for deletion (may select the same on twice)
+      for(i = 0; i < numInserts; i++)
+	deletes[i] = FALSE;
+      for(i = 0; i < numDeletes; i++)
+	deletes[rand() % numInserts] = TRUE;
 
-  // delete rows from table
-  for(i = 0; i < numDeletes; i++)
-    {
-      TEST_CHECK(deleteRecord(table,rids[deletes[i]]));
-    }
+      // init B-tree
+      TEST_CHECK(createBtree("testidx", DT_INT, 2));
+      TEST_CHECK(openBtree(&tree, "textidx"));
 
-  // update rows into table
-  for(i = 0; i < numUpdates; i++)
-    {
-      r = fromTestRecord(schema, updates[i]);
-      r->id = rids[i];
-      TEST_CHECK(updateRecord(table,r)); 
-    }
-
-  TEST_CHECK(closeTable(table));
-  TEST_CHECK(openTable(table, "test_table_r"));
-
-  // retrieve records from the table and compare to expected final stage
-  for(i = 0; i < numFinal; i++)
-    {
-      RID rid = rids[i];
-      TEST_CHECK(getRecord(table, rid, r));
-      ASSERT_EQUALS_RECORDS(fromTestRecord(schema, finalR[i]), r, schema, "compare records");
-    }
-  
-  TEST_CHECK(closeTable(table));
-  TEST_CHECK(deleteTable("test_table_r"));
-  TEST_CHECK(shutdownRecordManager());
-
-  free(table);
-  TEST_DONE();
-
-}
-
-void testScans (void)
-{
-  RM_TableData *table = (RM_TableData *) malloc(sizeof(RM_TableData));
-  TestRecord inserts[] = { 
-    {1, "aaaa", 3}, 
-    {2, "bbbb", 2},
-    {3, "cccc", 1},
-    {4, "dddd", 3},
-    {5, "eeee", 5},
-    {6, "ffff", 1},
-    {7, "gggg", 3},
-    {8, "hhhh", 3},
-    {9, "iiii", 2},
-    {10, "jjjj", 5},
-  };
-  TestRecord scanOneResult[] = { 
-    {3, "cccc", 1},
-    {6, "ffff", 1},
-  };
-  bool foundScan[] = {
-    FALSE,
-    FALSE
-  };
-  int numInserts = 10, scanSizeOne = 2, i;
-  Record *r;
-  RID *rids;
-  Schema *schema;
-  RM_ScanHandle *sc = (RM_ScanHandle *) malloc(sizeof(RM_ScanHandle));
-  Expr *sel, *left, *right;
-  int rc;
-
-  testName = "test creating a new table and inserting tuples";
-  schema = testSchema();
-  rids = (RID *) malloc(sizeof(RID) * numInserts);
-  
-  TEST_CHECK(initRecordManager(NULL));
-  TEST_CHECK(createTable("test_table_r",schema));
-  TEST_CHECK(openTable(table, "test_table_r"));
-  
-  // insert rows into table
-  for(i = 0; i < numInserts; i++)
-    {
-      r = fromTestRecord(schema, inserts[i]);
-      TEST_CHECK(insertRecord(table,r)); 
-      rids[i] = r->id;
-    }
-
-  TEST_CHECK(closeTable(table));
-  TEST_CHECK(openTable(table, "test_table_r"));
-
-  // run some scans
-  MAKE_CONS(left, stringToValue("i1"));
-  MAKE_ATTRREF(right, 2);
-  MAKE_BINOP_EXPR(sel, left, right, OP_COMP_EQUAL);
-
-  TEST_CHECK(startScan(table, sc, sel));
-  while((rc = next(sc, r)) == RC_OK)
-    {
-      for(i = 0; i < scanSizeOne; i++)
+      // insert keys
+      for(i = 0; i < numInserts; i++)
+	TEST_CHECK(insertKey(tree, keys[i], insert[i]));
+      
+      // delete entries
+      for(i = 0; i < numInserts; i++)
 	{
-	  if (memcmp(fromTestRecord(schema, scanOneResult[i])->data,r->data,getRecordSize(schema)) == 0)
-	      foundScan[i] = TRUE;
+	  if (deletes[i])
+	    TEST_CHECK(deleteKey(tree, keys[i]));
 	}
-    }
-  if (rc != RC_RM_NO_MORE_TUPLES)
-    TEST_CHECK(rc);
-  TEST_CHECK(closeScan(sc));
-  for(i = 0; i < scanSizeOne; i++)
-    ASSERT_TRUE(foundScan[i], "check for scan result");
-  
-  // clean up
-  TEST_CHECK(closeTable(table));
-  TEST_CHECK(deleteTable("test_table_r"));
-  TEST_CHECK(shutdownRecordManager());
 
-  free(table);
-  free(sc);
-  freeExpr(sel);
+      // search for keys
+      for(i = 0; i < 1000; i++)
+	{
+	  int pos = rand() % numInserts;
+	  RID rid;
+	  Value *key = keys[pos];
+	  
+	  if (deletes[pos])
+	    {
+	      int rc = findKey(tree, key, &rid);
+	      ASSERT_TRUE((rc == RC_IM_KEY_NOT_FOUND), "entry was deleted, should not find it");
+	    }
+	  else
+	    {
+	      TEST_CHECK(findKey(tree, key, &rid));
+	      ASSERT_EQUALS_RID(insert[pos], rid, "did we find the correct RID?");
+	    }
+	}
+
+      // cleanup
+      TEST_CHECK(closeBtree(tree));
+      TEST_CHECK(deleteBtree("testidx"));
+    }
+
+  TEST_CHECK(shutdownIndexManager());
+  freeValues(keys, numInserts);
+  free(deletes);
+
   TEST_DONE();
 }
 
-
-Schema *
-testSchema (void)
+// ************************************************************ 
+void
+testIndexScan (void)
 {
-  Schema *result;
-  char *names[] = { "a", "b", "c" };
-  DataType dt[] = { DT_INT, DT_STRING, DT_INT };
-  int sizes[] = { 0, 4, 0 };
-  int keys[] = {0};
-  int i;
-  char **cpNames = (char **) malloc(sizeof(char*) * 3);
-  DataType *cpDt = (DataType *) malloc(sizeof(DataType) * 3);
-  int *cpSizes = (int *) malloc(sizeof(int) * 3);
-  int *cpKeys = (int *) malloc(sizeof(int));
+  RID insert[] = { 
+    {1,1},
+    {2,3},
+    {1,2},
+    {3,5},
+    {4,4},
+    {3,2}, 
+  };
+  int numInserts = 6;
+  Value **keys;
+  char *stringKeys[] = {
+    "i1",
+    "i11",
+    "i13",
+    "i17",
+    "i23",
+    "i52"
+  };
+  
+  testName = "random insertion order and scan";
+  int i, testint, iter, rc;
+  BTreeHandle *tree = NULL;
+  BT_ScanHandle *sc;
+  RID rid;
+  
+  keys = createValues(stringKeys, numInserts);
 
-  for(i = 0; i < 3; i++)
+  // init
+  TEST_CHECK(initIndexManager(NULL));
+
+  for(iter = 0; iter < 50; i++)
     {
-      cpNames[i] = (char *) malloc(2);
-      strcpy(cpNames[i], names[i]);
+      int *permute;
+
+      // create permutation
+      permute = createPermutation(numInserts);
+
+      // create B-tree
+      TEST_CHECK(createBtree("testidx", DT_INT, 2));
+      TEST_CHECK(openBtree(&tree, "textidx"));
+
+      // insert keys
+      for(i = 0; i < numInserts; i++)
+	TEST_CHECK(insertKey(tree, keys[permute[i]], insert[permute[i]]));
+
+      // check index stats
+      ASSERT_EQUALS_INT(getNumNodes(tree, &testint),3,"number of nodes in btree");
+      ASSERT_EQUALS_INT(getNumEntries(tree, &testint),numInserts,"number of entries in btree");
+      
+      // execute scan, we should see tuples in sort order
+      openTreeScan(tree, &sc);
+      i = 0;
+      while((rc = nextEntry(sc, &rid)) == RC_OK)
+	{
+	  RID expRid = insert[i++];
+	  ASSERT_EQUALS_RID(expRid, rid, "did we find the correct RID?");
+	}
+      ASSERT_EQUALS_INT(RC_IM_NO_MORE_ENTRIES, rc, "no error returned by scan");
+      ASSERT_EQUALS_INT(numInserts, rc, "have seen all entries");
+      closeTreeScan(sc);
+
+      // cleanup
+      TEST_CHECK(closeBtree(tree));
+      TEST_CHECK(deleteBtree("testidx"));
+      free(permute);
     }
-  memcpy(cpDt, dt, sizeof(DataType) * 3);
-  memcpy(cpSizes, sizes, sizeof(int) * 3);
-  memcpy(cpKeys, keys, sizeof(int));
 
-  result = createSchema(3, cpNames, cpDt, cpSizes, 1, cpKeys);
+  TEST_CHECK(shutdownIndexManager());
+  freeValues(keys, numInserts);
+
+  TEST_DONE();
+}
+
+// ************************************************************ 
+int *
+createPermutation (int size)
+{
+  int *result = (int *) malloc(size * sizeof(int));
+  int i;
+
+  for(i = 0; i < size; result[i] = i, i++);
+
+  for(i = 0; i < 100; i++)
+    {
+      int l, r, temp;
+      l = rand() % size;
+      r = rand() % size;
+      temp = result[l];
+      result[l] = result[r];
+      result[r] = temp;
+    }
+  
+  return result;
+}
+
+// ************************************************************ 
+Value **
+createValues (char **stringVals, int size)
+{
+  Value **result = (Value **) malloc(sizeof(Value *) * size);
+  int i;
+  
+  for(i = 0; i < size; i++)
+    result[i] = stringToValue(stringVals[i]);
 
   return result;
 }
 
-Record *
-fromTestRecord (Schema *schema, TestRecord in)
+// ************************************************************ 
+void
+freeValues (Value **vals, int size)
 {
-  return testRecord(schema, in.a, in.b, in.c);
+  while(--size >= 0)
+    free(vals[size]);
+  free(vals);
 }
 
-Record *
-testRecord(Schema *schema, int a, char *b, int c)
-{
-  Record *result;
-  Value *value;
-
-  TEST_CHECK(createRecord(&result, schema));
-
-  MAKE_VALUE(value, DT_INT, a);
-  TEST_CHECK(setAttr(result, schema, 0, value));
-  freeVal(value);
-
-  MAKE_STRING_VALUE(value, b);
-  TEST_CHECK(setAttr(result, schema, 1, value));
-  freeVal(value);
-
-  MAKE_VALUE(value, DT_INT, c);
-  TEST_CHECK(setAttr(result, schema, 2, value));
-  freeVal(value);
-
-  return result;
-}

@@ -43,7 +43,7 @@ closeBtree (BTreeHandle *tree)
 }
 
 RC
-deleteBtree (BTreeHandle *tree)
+deleteBtree (char *idxId)
 {
   return RC_OK;
 }
