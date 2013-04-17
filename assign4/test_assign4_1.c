@@ -68,17 +68,26 @@ testInsertAndFind (void)
   // init
   TEST_CHECK(initIndexManager(NULL));
   TEST_CHECK(createBtree("testidx", DT_INT, 2));
+<<<<<<< HEAD
+  TEST_CHECK(openBtree(&tree, "textidx"));
+=======
   TEST_CHECK(openBtree(&tree, "testidx"));
+>>>>>>> instructor
 
   // insert keys
   for(i = 0; i < numInserts; i++)
     TEST_CHECK(insertKey(tree, keys[i], insert[i]));
 
   // check index stats
+<<<<<<< HEAD
+  ASSERT_EQUALS_INT(getNumNodes(tree, &testint),4,"number of nodes in btree");
+  ASSERT_EQUALS_INT(getNumEntries(tree, &testint),numInserts,"number of entries in btree");
+=======
   TEST_CHECK(getNumNodes(tree, &testint));
   ASSERT_EQUALS_INT(testint,4, "number of nodes in btree");
   TEST_CHECK(getNumEntries(tree, &testint));
   ASSERT_EQUALS_INT(testint, numInserts, "number of entries in btree");
+>>>>>>> instructor
 
   // search for keys
   for(i = 0; i < 1000; i++)
@@ -144,7 +153,11 @@ testDelete (void)
 
       // init B-tree
       TEST_CHECK(createBtree("testidx", DT_INT, 2));
+<<<<<<< HEAD
+      TEST_CHECK(openBtree(&tree, "textidx"));
+=======
       TEST_CHECK(openBtree(&tree, "testidx"));
+>>>>>>> instructor
 
       // insert keys
       for(i = 0; i < numInserts; i++)
@@ -231,17 +244,26 @@ testIndexScan (void)
 
       // create B-tree
       TEST_CHECK(createBtree("testidx", DT_INT, 2));
+<<<<<<< HEAD
+      TEST_CHECK(openBtree(&tree, "textidx"));
+=======
       TEST_CHECK(openBtree(&tree, "testidx"));
+>>>>>>> instructor
 
       // insert keys
       for(i = 0; i < numInserts; i++)
 	TEST_CHECK(insertKey(tree, keys[permute[i]], insert[permute[i]]));
 
       // check index stats
+<<<<<<< HEAD
+      ASSERT_EQUALS_INT(getNumNodes(tree, &testint),3,"number of nodes in btree");
+      ASSERT_EQUALS_INT(getNumEntries(tree, &testint),numInserts,"number of entries in btree");
+=======
       TEST_CHECK(getNumNodes(tree, &testint));
       ASSERT_EQUALS_INT(testint, 3, "number of nodes in btree");
       TEST_CHECK(getNumEntries(tree, &testint));
       ASSERT_EQUALS_INT(testint, numInserts, "number of entries in btree");
+>>>>>>> instructor
       
       // execute scan, we should see tuples in sort order
       openTreeScan(tree, &sc);
