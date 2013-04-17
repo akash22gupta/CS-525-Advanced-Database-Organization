@@ -1,0 +1,5 @@
+Invation options:
+
+-people use fsync to guarantee that a page has been flushed to disk
+-the read page methods are smart about moving around in the file. E.g., readPage(n) takes the current position into account
+-
