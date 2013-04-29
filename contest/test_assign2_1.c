@@ -52,6 +52,8 @@ main (void)
   testCreatingAndReadingDummyPages();
   testReadPage();
   testFIFO();
+
+  return 0;
 }
 
 // create pages n with content "Page X" and read them back to check whether the content is right

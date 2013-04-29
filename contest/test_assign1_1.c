@@ -32,6 +32,7 @@ main (void)
   checkErrorCode(testSinglePageContent(), "reading and writing single page content");
 
   myExit(0);
+  return 0;
 }
 
 void

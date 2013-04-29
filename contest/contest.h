@@ -1,7 +1,11 @@
 #ifndef CONTEST_H
 #define CONTEST_H
 
-extern void setUp (int numPages);
-extern void shutdown (void);
+#include "dberror.h"
+
+extern RC setUpContest (int numPages);
+extern RC shutdownContest (void);
+
+extern long getContestIOs (void);
 
 #endif
