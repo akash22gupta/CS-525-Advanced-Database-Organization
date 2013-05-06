@@ -7,11 +7,11 @@
 #include "record_mgr.h"
 #include "tables.h"
 
-static RC completeWorkload1 (double *t);
-static RC singleWorkload1 (int dbsize, int numRequests, int numPages, double *t);
+static RC completeWorkload1 (double *t, long *ios);
+static RC singleWorkload1 (int dbsize, int numRequests, int numPages, double *t, long *ios);
 
-static RC completeWorkload2 (double *t);
-static RC singleWorkload2 (int dbsize, int numRequests, int numPages, int insertPerc, int scanFreq, double *t);
+static RC completeWorkload2 (double *t, long *ios);
+static RC singleWorkload2 (int dbsize, int numRequests, int numPages, int insertPerc, int scanFreq, double *t, long *ios);
 
 // helpers
 static RC execScan (RM_TableData *table, Expr *sel, Schema *schema);
@@ -28,43 +28,45 @@ int
 main (void)
 {
   double curTime = 0;
+  long ios = 0;
 
-  TEST_CHECK(completeWorkload1(&curTime));
-  printf("\n-------------------------------\n-- WORKLOAD 1 TOTAL: %f sec, I/Os: %ld\n\n", curTime, getContestIOs());
+  TEST_CHECK(completeWorkload1(&curTime, &ios));
+  printf("\n-------------------------------\n-- WORKLOAD 1 TOTAL: %f sec, I/Os: %ld\n\n", curTime, ios);
 
   curTime = 0;
-  TEST_CHECK(completeWorkload2(&curTime));
-  printf("\n-------------------------------\n-- WORKLOAD 2 TOTAL: %f, I/Os: %ld\n\n", curTime, getContestIOs());
+  ios = 0;
+  TEST_CHECK(completeWorkload2(&curTime, &ios));
+  printf("\n-------------------------------\n-- WORKLOAD 2 TOTAL: %f, I/Os: %ld\n\n", curTime, ios);
 
   return 0;
 }
 
 RC
-completeWorkload1(double *t)
+completeWorkload1(double *t, long *ios)
 {
 
   // small database + large buffer = test in memory efficiency
-  TEST_CHECK(singleWorkload1 (1000, 100000, 10000, t));
-  TEST_CHECK(singleWorkload1 (10000, 10000, 10000, t));
-  TEST_CHECK(singleWorkload1 (100000, 1000, 10000, t));
+  TEST_CHECK(singleWorkload1 (1000, 100000, 10000, t, ios));
+  TEST_CHECK(singleWorkload1 (10000, 10000, 10000, t, ios));
+  TEST_CHECK(singleWorkload1 (100000, 1000, 10000, t, ios));
 
   // large database + large buffer = test of in memory efficiency and fast access to pages in buffer manager
-  TEST_CHECK(singleWorkload1 (1000000, 100, 100000, t));  
+  TEST_CHECK(singleWorkload1 (1000000, 100, 100000, t, ios));  
 
   // small database + small buffer = test eviction and efficient disk access
-  TEST_CHECK(singleWorkload1 (10000, 10000, 20, t));  
+  TEST_CHECK(singleWorkload1 (10000, 10000, 20, t, ios));  
 
   // large database + small buffer = test eviction and efficient disk access
-  TEST_CHECK(singleWorkload1 (1000000, 1000, 100, t));  
+  TEST_CHECK(singleWorkload1 (1000000, 1000, 100, t, ios));  
 
   // very large database + small buffer = stress test scaling
-  TEST_CHECK(singleWorkload1 (100000000, 10, 100, t));  
+  TEST_CHECK(singleWorkload1 (100000000, 10, 100, t, ios));  
 
   return RC_OK;
 }
 
 RC
-singleWorkload1 (int size, int numRequests, int numPages, double *t)
+singleWorkload1 (int size, int numRequests, int numPages, double *t, long *ios)
 {
   RM_TableData *table = (RM_TableData *) malloc(sizeof(RM_TableData));
   Schema *schema = schema1();
@@ -127,8 +129,9 @@ singleWorkload1 (int size, int numRequests, int numPages, double *t)
   // measure time
   endTime = time(NULL);
   (*t) += difftime(endTime,startTime);
-  printf("\nworkload 1 - N(R)=<%i>, #scans=<%i>, M=<%i>: %f sec\n", size, numRequests, numPages, *t);
-
+  (*ios) += getContestIOs();
+  printf("\nworkload 1 - N(R)=<%i>, #scans=<%i>, M=<%i>: %f sec, %ld I/Os\n", size, numRequests, numPages, *t, *ios);
+  
   // clean up
   TEST_CHECK(closeTable(table));
   TEST_CHECK(deleteTable("test_table_r"));
@@ -163,22 +166,22 @@ execScan (RM_TableData *table, Expr *sel, Schema *schema)
 
 
 RC
-completeWorkload2(double *t)
+completeWorkload2(double *t, long *ios)
 {
   // 70 - inserts, every 100th operation is a scan
-  TEST_CHECK(singleWorkload2 (10000, 100000, 100, 70, 100, t));
+  TEST_CHECK(singleWorkload2 (10000, 100000, 100, 70, 100, t, ios));
   
   // 100 inserts, every 1000th operation is a scan
-  TEST_CHECK(singleWorkload2 (100, 100000, 50, 100, 1000, t));
+  TEST_CHECK(singleWorkload2 (100, 100000, 50, 100, 1000, t, ios));
 
   // large database, only 10 scans 
-  TEST_CHECK(singleWorkload2 (1000000, 100000, 100, 70, 10000, t));
+  TEST_CHECK(singleWorkload2 (1000000, 100000, 100, 70, 10000, t, ios));
 
   return RC_OK;
 }
 
 RC
-singleWorkload2 (int size, int numRequests, int numPages, int percInserts, int scanFreq, double *t)
+singleWorkload2 (int size, int numRequests, int numPages, int percInserts, int scanFreq, double *t, long *ios)
 {
   RM_TableData *table = (RM_TableData *) malloc(sizeof(RM_TableData));
   Schema *schema = schema1();
@@ -272,7 +275,8 @@ singleWorkload2 (int size, int numRequests, int numPages, int percInserts, int s
   // measure time
   endTime = time(NULL);
   (*t) += difftime(endTime,startTime);
-  printf("\nworkload 1 - N(R)=<%i>, #scans=<%i>, M=<%i>: %f sec\n", size, numRequests, numPages, *t);
+  (*ios) += getContestIOs();
+  printf("\nworkload 2 - N(R)=<%i>, #scans=<%i>, M=<%i>: %f sec, %ld I/Os\n", size, numRequests, numPages, *t, *ios);
 
   // clean up
   TEST_CHECK(closeTable(table));
