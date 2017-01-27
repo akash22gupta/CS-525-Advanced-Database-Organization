@@ -19,7 +19,7 @@ setUpContest (int numPages)
 RC
 shutdownContest (void)
 {
-  shutdownStorageManager();
+  shutdownRecordManager();
   return RC_OK;
 }
 
@@ -27,5 +27,5 @@ shutdownContest (void)
 long
 getContestIOs (void)
 {
-  return 0;
+  return 1;
 }

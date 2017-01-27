@@ -1,9 +1,11 @@
-
 #ifndef BUFFER_MANAGER_H
 #define BUFFER_MANAGER_H
 
 // Include return codes and methods for logging errors
 #include "dberror.h"
+
+// Include bool DT
+#include "dt.h"
 
 // Replacement Strategies
 typedef enum ReplacementStrategy {
@@ -17,10 +19,6 @@ typedef enum ReplacementStrategy {
 // Data Types and Structures
 typedef int PageNumber;
 #define NO_PAGE -1
-
-typedef short bool;
-#define TRUE 1
-#define FALSE 0
 
 typedef struct BM_BufferPool {
   char *pageFile;

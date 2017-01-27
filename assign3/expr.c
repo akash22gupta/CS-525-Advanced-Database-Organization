@@ -63,6 +63,7 @@ boolNot (Value *input, Value *result)
 {
   if (input->dt != DT_BOOL)
     THROW(RC_RM_BOOLEAN_EXPR_ARG_IS_NOT_BOOLEAN, "boolean NOT requires boolean input");
+  result->dt = DT_BOOL;
   result->v.boolV = !(input->v.boolV);
 
   return RC_OK;

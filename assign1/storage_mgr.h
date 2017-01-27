@@ -1,18 +1,7 @@
 #ifndef STORAGE_MGR_H
 #define STORAGE_MGR_H
 
-/* module wide constants */
-#define PAGE_SIZE 4096
-
-/* return code definitions */
-typedef int RC;
-#define RC_OK 0
-#define RC_FILE_NOT_FOUND 1
-#define RC_FILE_HANDLE_NOT_INIT 2
-#define RC_WRITE_FAILED 3
-#define RC_READ_NON_EXISTING_PAGE 4
-
-extern char *RC_message;
+#include "dberror.h"
 
 /************************************************************
  *                    handle data structures                *
@@ -50,8 +39,5 @@ extern RC writeBlock (int pageNum, SM_FileHandle *fHandle, SM_PageHandle memPage
 extern RC writeCurrentBlock (SM_FileHandle *fHandle, SM_PageHandle memPage);
 extern RC appendEmptyBlock (SM_FileHandle *fHandle);
 extern RC ensureCapacity (int numberOfPages, SM_FileHandle *fHandle);
-
-/* print a message to standard out describing the error */
-extern void printError (RC error);
 
 #endif
