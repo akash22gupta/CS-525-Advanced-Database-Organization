@@ -1,24 +1,25 @@
 --------Storage Manager CS - 525 Assignment No.1-------------
-Akash Gupta      - A20378676
-Tanmay Pradhan   - A20376280
-Snehita Kolapkar - A20389075
+-Akash Gupta      - A20378676
+-Tanmay Pradhan   - A20376280
+-Snehita Kolapkar - A20389075
 
 Installation Instruction :
 
 In the fourier terminal go to assignment 1 directory and run the following commands:
 
-Step 1-  $ make test_assign1
+Step 1-  $ make 
 Step 2-  $ ./test_assign1
+
 
 To run additional test cases:
 
-Step 1- $make test_assign2
+Step 1-  $ make test_assign2
 Step 2-  $ ./test_assign2
+
 
 About Test Cases:
 
-We have added two functions naming EXTRA_TEST_CASES() and additionalPageTesting() in the file test_assign1_2.c which contain the extra test cases for 
-the methods that were not tested in the default test case file, and the functions that are tested in the new test cases are :
+We have added two functions naming EXTRA_TEST_CASES() and additionalPageTesting() in the file test_assign1_2.c which contain the extra test cases for the methods that were not tested in the default test case file, and the functions that are tested in the new test cases are :
 readBlock()
 readFirstBlock() 
 readCurrentBlock()
@@ -29,6 +30,7 @@ writeBlock ()
 writeCurrentBlock()
 appendEmptyBlock()
 ensureCapacity ()
+
 
 Function Description :
 
@@ -82,6 +84,7 @@ g) readLastBlock():
       - Checks if the entered file already exist.
       - If the file exist it reads the last block of the file.
       - If the file does not exist throws error.
+
 
 3. Write Functions
 
