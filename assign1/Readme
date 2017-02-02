@@ -65,42 +65,52 @@ d) destroyPageFile():
       - We are using remove function to destroy the file.
       - Returns RC_OK if file destroyed successfully else returns RC_FILE_NOT_FOUND. 
 
+------------------------------------------------------------------------------------
+2. Read functions :
 
-2. Read functions
-
-a) readFirstBlock():
-      - Checks if the entered file already exist.
-      - If the file exist it reads the first block of the file.
-      - If the file does not exist throws error.
+a) readBlock():
+      - Checks if the total number of pages are not greater than the page number(pageNum) from where to read.
+      - If it is greater then throws an error.
+      - Else we will set the pointer position to the page which we have to read.
+      - then we read the block.
+      - And then we set the current page position to the page number that we read.
 
 b) getBlockPos():
-      - Returns the pointer to the memory location of the entered block.
+      - Returning the current page position in the page file by using the data structure object fHandle.
 
-c) readBlock():
-      - Checks if the entered file already exist.
-      - If the file exist it reads the entered block of the file.
-      - If the file does not exist throws error.
+c) readFirstBlock():
+      - Checks if the data structure fHandle contains the values or not.
+      - If it does then checks if the total number of pages are greater than 0.
+      - If, then read the first block of the file.
+      - And set the current page position to first block i.e. 0.
 
 d) readPreviousBlock():
-      - Checks if the entered file already exist.
-      - If the file exist it reads the previous block to which the pointer in the data structure is pointing.
-      - If the file does not exist throws error.
+      - Checks if the data structure fHandle contains the values or not.
+      - If it does then setting the pointer position to the previous page position.
+      - If previous page position is out of boundry then throws an error.
+      - Else reading the previous block of the file.
+      - And setting the current page position to the previous block.
 
 e) readCurrentBlock():
-      - Checks if the entered file already exist.
-      - If the file exist it reads the block of data to which the pointer in the data structure is pointing.
-      - If the file does not exist throws error.
+      - Checks if the data structure fHandle contains the values or not.
+      - If it does then getting the current page position by calling the getBlockPos() function.
+      - And then reading the current page of the file.
+      - After that setting the current page position the the current block.
 
 f) readNextBlock():
-      - Checks if the entered file already exist.
-      - If the file exist it reads the next block of data to which the pointer is pointing.
-      - If the file does not exist throws error.
+      - Checks if the data structure fHandle contains the values or not.
+      - If it does then setting the pointer position to the next page position.
+      - If the next block is not out of boundry.
+      - then, reading the next block of the file.
+      - And setting the current page position to the next block.
 
 g) readLastBlock():
-      - Checks if the entered file already exist.
-      - If the file exist it reads the last block of the file.
-      - If the file does not exist throws error.
+      - Checks if the data structure fHandle contains the values or not.
+      - If it does then setting the pointer position to the last page position.
+      - Reading the last block of the file.
+      - And setting the current page position to the last block.
 
+-------------------------------------------------------------------------------------------------------------
 
 3. Write Functions
 
