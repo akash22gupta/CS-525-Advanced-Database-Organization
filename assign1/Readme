@@ -57,10 +57,13 @@ b) openPageFile():
       - After that we are updating the file handle with file name, total number of pages and current page position.
       
 c) closePageFile():
-      - Closes the already open page file.
+      - Closes the already opened page file.
+      - Returns RC_OK if file closes successfully else returns RC_FILE_NOT_FOUND.
 
 d) destroyPageFile():
       - Destroys already created page file.
+      - We are using remove function to destroy the file.
+      - Returns RC_OK if file destroyed successfully else returns RC_FILE_NOT_FOUND. 
 
 
 2. Read functions
