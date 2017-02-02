@@ -8,10 +8,10 @@ OBJ1 = dberror.o storage_mgr.o test_assign1_2.o
 	$(CC) -c -o $@ $< $(CFLAGS)
 
 test_assign1: $(OBJ)
-	gcc -o  $@ $^ $(CFLAGS)
+	cc -o  $@ $^ $(CFLAGS)
 
 test_assign2: $(OBJ1)
-	gcc -o  $@ $^ $(CFLAGS)
+	cc -o  $@ $^ $(CFLAGS)
 
 
 clean:
