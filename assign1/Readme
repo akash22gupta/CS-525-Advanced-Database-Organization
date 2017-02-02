@@ -115,18 +115,27 @@ g) readLastBlock():
 3. Write Functions
 
 a) writeBlock():
-      - Checks if the entered file already exist else throws an error.
-      - If the file exist it writes data in the page number entered.
+      - Checks if the page number where to write is not less than 0 or not greater than total number of pages.
+      - If not, then checks the data structure fHandle contains the values or not.
+      - If it is Null then throws an error.
+      - Else we will set the pointer position to the page where we have to write.
+      - then we write the block at page number(pageNum).
+      - And then we set the current page position to the page number that we just write.
+      - Then we update the total number of pages.
 
 b)writeCurrentBlock():      
-      - Checks if the entered file already exist else throws an error.
-      - If the file exist it writes data where the pointer is pointing currently.
+      - First we get the current page position by calling the getBlockPos().
+      - then we call the writeBlock() function by passing the current position in its arguments.
+      - If current block is successfully written then we return RC_OK.
+      - Else we return RC_WRITE_FAILED.
 
 c)appendEmptyBlock():
-      - Checks if the entered file already exist else throws an error.
-      - If the file exist, then is appends a block of empty('/0' bytes) data to the end of the file.
-
+      - Checks if the data structure fHandle contains the values or not.
+      - if it does, then we create a buffer of PAGE_SIZE.
+      - then we point the position of the file pointer to the end and we write an empty block there.
+      - then we are updating the total number of pages and current page position.
+    
 d)ensureCapacity():
-      - Check number of pages in the file.
-      - If number of pages are less than specified pages, then increase the the number of pages to the specified number.
-      - It uses appendEmptyBlock function to add the number of pages with '/0' bytes data.
+      - First we check if the total number of pages are less than the number of pages(numberOfPages) passed in the function argument.
+      - If it is less, then we find how many pages we have to add.
+      - we then create the remaining number of pages by running a loop and calling the appendEmptyBlock() function in the loop.
