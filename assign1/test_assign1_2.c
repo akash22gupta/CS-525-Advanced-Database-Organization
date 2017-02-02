@@ -179,18 +179,19 @@ void additionalPageTesting(void){
 	     ASSERT_TRUE((ph[i] == (i % 10) + '0'), "character in page read from disk is the one we expected.");
 	   printf("reading last block\n");
 
-
+	 // writing block at current position
+	 for (i=0; i < PAGE_SIZE; i++)
+	       ph[i] = (i % 10) + '0';
 	  TEST_CHECK(writeCurrentBlock (&fh, ph));
-	   for (i=0; i < PAGE_SIZE; i++)
-	  	 ASSERT_TRUE((ph[i] == (i % 10) + '0'), "character in page read from disk is the one we expected.");
-	   printf("write current block\n");
+	  printf("write current block\n");
 
-
+		// Appending empty block
 	   TEST_CHECK(appendEmptyBlock (&fh));
 	   printf("append empty block\n");
 
 	   //printf("\n %d ", fh.totalNumPages);
-
+	   
+		// Ensuring capacity of file is 5 pages
 	   TEST_CHECK(ensureCapacity (5, &fh));
 	   	  ASSERT_TRUE((fh.totalNumPages==5),"checking total no. of pages is 5");
 	   printf("ensure capacity \n");
