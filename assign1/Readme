@@ -35,17 +35,27 @@ ensureCapacity ()
 
 -------------------------------------------------------
 
+WHEN THE FILE IS OPENED, THE CURRENT PAGE POSITION IS THE FIRST PAGE IN THE FILE i.e. CURRENT PAGE POSITION = 0. AND THE TOTAL NUMBER OF PAGES DEPENDS UPON THE FILE ZISE.
+
+Example: If the total number of pages are 1 then the current page position is 0.
+
+--------------------------------------------------------
+
 Function Description :
 
 1. Fucntions to manipulate page file(Create,Open,Close,Destroy)
 
 a) createPageFile():
-      - Creates a new page file of 1 page and fills it with '\0' bytes.
+      - Creates a new page file of 1 page(PAGE_SIZE) and fills it with '\0' bytes.
+      - In this function we are using fopen() function to create the file.
+      - The file is opened in the write mode so that we can fill it with '\0' bytes.
 
 b) openPageFile():
       - Checks if the input file is present.
-      - If file is present then opens the existing file or else throws an error RC_FILE_NOT_FOUND
-
+      - If file is present then opens the existing file or else throws an error RC_FILE_NOT_FOUND.
+      - We are calculating the total number of pages by pointing the file pointer to end and then dividing it by the page size. 
+      - After that we are updating the file handle with file name, total number of pages and current page position.
+      
 c) closePageFile():
       - Closes the already open page file.
 
