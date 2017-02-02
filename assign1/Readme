@@ -1,0 +1,90 @@
+--------Storage Manager CS - 525 Assignment No.1-------------
+Akash Gupta      - A20378676
+Tanmay Pradhan   - A20376280
+Snehita Kolapkar - A20389075
+
+Installation Instruction :
+
+In the fourier terminal go to assignment 1 directory and run the following commands:
+
+Step 1-  $ make
+Step 2-  $ ./test_assign1
+
+About Test Cases:
+
+We have added two functions naming EXTRA_TEST_CASES() and additionalPageTesting() in the file test_assign1_1.c with have the extra test cases for all the methods that were not tested in the default test case file, and the new test cases are in the same 
+
+
+Function Description :
+
+1. Fucntions to manipulate page file(Create,Open,Close,Destroy)
+
+a) createPageFile():
+      - Creates a new page file of 1 page and fills it with '\0' bytes.
+
+b) openPageFile():
+      - Checks if the input file is present.
+      - If file is present then opens the existing file or else throws an error RC_FILE_NOT_FOUND
+
+c) closePageFile():
+      - Closes the already open page file.
+
+d) destroyPageFile():
+      - Destroys already created page file.
+
+
+2. Read functions
+
+a) readFirstBlock():
+      - Checks if the entered file already exist.
+      - If the file exist it reads the first block of the file.
+      - If the file does not exist throws error.
+
+b) getBlockPos():
+      - Returns the pointer to the memory location of the entered block.
+
+c) readBlock():
+      - Checks if the entered file already exist.
+      - If the file exist it reads the entered block of the file.
+      - If the file does not exist throws error.
+
+d) readPreviousBlock():
+      - Checks if the entered file already exist.
+      - If the file exist it reads the previous block to which the pointer in the data structure is pointing.
+      - If the file does not exist throws error.
+
+e) readCurrentBlock():
+      - Checks if the entered file already exist.
+      - If the file exist it reads the block of data to which the pointer in the data structure is pointing.
+      - If the file does not exist throws error.
+
+f) readNextBlock():
+      - Checks if the entered file already exist.
+      - If the file exist it reads the next block of data to which the pointer is pointing.
+      - If the file does not exist throws error.
+
+g) readLastBlock():
+      - Checks if the entered file already exist.
+      - If the file exist it reads the last block of the file.
+      - If the file does not exist throws error.
+
+3. Write Functions
+
+a) writeBlock():
+      - Checks if the entered file already exist else throws an error.
+      - If the file exist it writes data in the page number entered.
+
+b)writeCurrentBlock():      
+      - Checks if the entered file already exist else throws an error.
+      - If the file exist it writes data where the pointer is pointing currently.
+
+c)appendEmptyBlock():
+      - Checks if the entered file already exist else throws an error.
+      - If the file exist, then is appends a block of empty('/0' bytes) data to the end of the file.
+
+d)ensureCapacity():
+      - Check number of pages in the file.
+      - If number of pages are less than specified pages, then increase the the number of pages to the specified number.
+      - It uses appendEmptyBlock function to add the number of pages with '/0' bytes data.
+
+
