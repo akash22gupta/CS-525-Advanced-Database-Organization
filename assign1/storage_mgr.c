@@ -68,8 +68,6 @@ RC closePageFile(SM_FileHandle *fHandle) {
 
 //Destroying Page file
 RC destroyPageFile(char *fileName) {
-	//if (fclose(file) != 0)
-	//	fclose(file);
 	if (remove(fileName) != 0)//remove will delete the file fileName and return 0 if successful
 		return RC_FILE_NOT_FOUND;
 	else
