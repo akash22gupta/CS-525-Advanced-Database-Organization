@@ -3,9 +3,9 @@
 -Tanmay Pradhan   - A20376280
 -Snehita Kolapkar - A20389075
 
-Installation Instruction :
+----------------------------------------------------
 
-In the fourier terminal go to assignment 1 directory and run the following commands:
+Running Instructions :
 
 Step 1-  $ make 
 Step 2-  $ ./test_assign1
@@ -16,6 +16,7 @@ To run additional test cases:
 Step 1-  $ make test_assign2
 Step 2-  $ ./test_assign2
 
+------------------------------------------------------
 
 About Test Cases:
 
@@ -31,6 +32,8 @@ writeCurrentBlock()
 appendEmptyBlock()
 ensureCapacity ()
 
+
+-------------------------------------------------------
 
 Function Description :
 
