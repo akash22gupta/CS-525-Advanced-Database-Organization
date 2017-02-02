@@ -7,13 +7,28 @@ Installation Instruction :
 
 In the fourier terminal go to assignment 1 directory and run the following commands:
 
-Step 1-  $ make
+Step 1-  $ make test_assign1
 Step 2-  $ ./test_assign1
+
+To run additional test cases:
+
+Step 1- $make test_assign2
+Step 2-  $ ./test_assign2
 
 About Test Cases:
 
-We have added two functions naming EXTRA_TEST_CASES() and additionalPageTesting() in the file test_assign1_1.c with have the extra test cases for all the methods that were not tested in the default test case file, and the new test cases are in the same 
-
+We have added two functions naming EXTRA_TEST_CASES() and additionalPageTesting() in the file test_assign1_2.c which contain the extra test cases for 
+the methods that were not tested in the default test case file, and the functions that are tested in the new test cases are :
+readBlock()
+readFirstBlock() 
+readCurrentBlock()
+readPreviousBlock()
+readNextBlock()
+readLastBlock()
+writeBlock ()
+writeCurrentBlock()
+appendEmptyBlock()
+ensureCapacity ()
 
 Function Description :
 
@@ -86,5 +101,3 @@ d)ensureCapacity():
       - Check number of pages in the file.
       - If number of pages are less than specified pages, then increase the the number of pages to the specified number.
       - It uses appendEmptyBlock function to add the number of pages with '/0' bytes data.
-
-
