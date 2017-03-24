@@ -1,0 +1,57 @@
+CC=gcc -std=c99
+
+all: exec clean
+
+exec: assign3
+	./assign3
+
+assign3: test_assign3_2.o dberror.o record_mgr.o buffer_mgr.o buffer_mgr_stat.o storage_mgr.o rm_serializer.o expr.o 
+	$(CC) test_assign3_2.o dberror.o record_mgr.o buffer_mgr.o buffer_mgr_stat.o storage_mgr.o rm_serializer.o expr.o -o assign3
+
+test_assign3_2.o: test_assign3_2.c dberror.h expr.h record_mgr.h tables.h test_helper.h
+	$(CC) -c test_assign3_2.c 
+
+dberror.o: dberror.c dberror.h
+	$(CC) -c dberror.c
+
+record_mgr.o: record_mgr.c record_mgr.h tables.h buffer_mgr.h storage_mgr.h
+	$(CC) -c record_mgr.c
+
+buffer_mgr.o: buffer_mgr.c buffer_mgr.h dberror.h storage_mgr.h
+	$(CC) -c buffer_mgr.c
+
+buffer_mgr_stat.o: buffer_mgr_stat.c buffer_mgr_stat.h buffer_mgr.h
+	$(CC) -c buffer_mgr_stat.c
+
+storage_mgr.o: storage_mgr.c storage_mgr.h dberror.h
+	$(CC) -c storage_mgr.c
+
+rm_serializer.o: rm_serializer.c dberror.h tables.h record_mgr.h
+	$(CC) -c rm_serializer.c
+
+expr.o: expr.c expr.h dberror.h record_mgr.h tables.h
+	$(CC) -c expr.c
+
+
+clean:
+	rm assign3 test_expr test_assign3_2.o rm_serializer.o expr.o record_mgr.o buffer_mgr.o storage_mgr.o dberror.o buffer_mgr_stat.o test_table_r test_table_t
+
+.PHONY: clean
+
+OBJ=assign3 expr.o dberror.o rm_serializer.o record_mgr.o test_assign3_2.o rm_serializer.o expr.o record_mgr.o buffer_mgr.o storage_mgr.o dberror.o buffer_mgr_stat.o test_table_r test_table_t
+
+TEST_OBJ=$(TEST_BIN:.bin=.o)
+
+CFLAGS:=$(CFLAGS) -I. -g -Wall -Werror
+
+all: $(TEST_BIN) $(OBJ) $(TEST_OBJ) $(HEADERS)
+
+$(OBJ): $(HEADERS)
+
+%.bin: %.o $(OBJ) $(TEST_OBJ)
+	$(CC) $(CFLAGS) -o $@ $(OBJ) $(@:.bin=.o)
+
+clean:
+	rm -f $(TEST_BIN) $(OBJ) $(TEST_OBJ)
+
+.PHONY: clean
