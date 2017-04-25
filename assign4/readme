@@ -1,0 +1,57 @@
+Assignment 4: B+ Tree
+
+Snehita Kolapkar A20389074
+Akash Gupta A20378676
+Tanmay Pradhan A20376280
+
+
+----------B Tree Functions------------
+
+1) initIndexManager
+  -Initializes Btree.
+
+2) shutdownIndexManager
+  -Shuts down index manager
+
+3) createBtree
+  -Allocates memory to all elements of Btree struct. Creates a page file with name idxId.
+
+4) openBtree
+  -Opens page file of the name idxID
+
+5) closeBtree
+  -Frees all the allocated memory.
+
+6) deleteBtree
+  -Deletes all the record of the mentioned Btree
+
+---------Access Functions------------
+
+7) getNumNodes
+  -Returns the numbers of nodes in a Btree
+
+8) getNumEntries
+  -Returns the total number of entries in a Btree
+
+9) getKeyType
+  -Returns the key type i.e Integer,String etc
+
+--------Index Access Functions----------
+
+10) findKey
+   -Returns the key which needs to be found
+
+11) insertKey
+   -Inserts the given key in a Btree
+
+12) deleteKey
+   -Deletes corresponding key in a Btree
+
+13) openTreeScan
+   -Scans all entries of the tree
+
+14) nextEntry
+   -Reads next entry in the Btree
+
+15) closeTreeScan
+   -Closes scanning of tree elements
