@@ -27,6 +27,18 @@ typedef int RC;
 #define RC_IM_N_TO_LAGE 302
 #define RC_IM_NO_MORE_ENTRIES 303
 
+#define RC_MELLOC_MEM_ALLOC_FAILED
+#define RC_SCHEMA_NOT_INIT
+#define RC_PIN_PAGE_FAILED
+#define RC_UNPIN_PAGE_FAILED
+#define RC_INVLD_PAGE_NUM 
+#define RC_IVALID_PAGE_SLOT_NUM 
+#define RC_MARK_DIRTY_FAILED 
+#define RC_BUFFER_SHUTDOWN_FAILED 
+#define RC_NULL_IP_PARAM 
+#define RC_FILE_DESTROY_FAILED 
+#define RC_OPEN_TABLE_FAILED 
+
 /* holder for error messages */
 extern char *RC_message;
 
