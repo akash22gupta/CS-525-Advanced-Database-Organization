@@ -48,25 +48,35 @@ RC createBtree (char *idxId, DataType keyType, int n)
 
 RC openBtree (BTreeHandle **tree, char *idxId)
 {
-    openPageFile (idxId, &btree_fh);
+    if(openPageFile (idxId, &btree_fh)==0){
+    	return RC_OK;
+	}
 
-    return RC_OK;
+    else{
+    	return RC_ERROR;
+	}
 }
 
 RC closeBtree (BTreeHandle *tree)
 {
-    closePageFile(&btree_fh);
-    
-    free(root);
-    
+    if(closePageFile(&btree_fh)==0){
+	free(root);
     return RC_OK;
+	}
+	else{
+		return RC_ERROR;
+	}
 }
 
 RC deleteBtree (char *idxId)
 {
-    destroyPageFile(idxId);
+    if(destroyPageFile(idxId)==0){
+		return RC_OK;
+	}
     
-    return RC_OK;
+    else{
+    	return RC_ERROR;
+	}
 }
 
 
@@ -84,7 +94,7 @@ RC getNumNodes (BTreeHandle *tree, int *result)
 
     *result = numNodes;
     
-    //free(temp);
+    
     return RC_OK;
 }
 
@@ -180,10 +190,8 @@ RC insertKey (BTreeHandle *tree, Value *key, RID rid)
         node->next[0] = root;
         node->next[1] = root->next[maxEle];
         node->next[2] = root->next[maxEle]->next[maxEle];
-//        printf("\nNODE: %d", node->next[1]->key[1]);
+
     }
-    //free(temp);
-    //free(node);
     
     return RC_OK;
 }
@@ -206,7 +214,7 @@ RC deleteKey (BTreeHandle *tree, Value *key)
             break;
     }
     
-    //free(temp);
+
     return RC_OK;
 }
 
@@ -267,7 +275,7 @@ RC openTreeScan (BTreeHandle *tree, BT_ScanHandle **handle)
             count ++;
         }
     }
-    //free(temp);
+
     return RC_OK;
 }
 
@@ -278,7 +286,7 @@ RC nextEntry (BT_ScanHandle *handle, RID *result)
             indexNum = 0;
             scan = scan->next[maxEle];
         }
-//        printf("\n%d\n", root->key[indexNum]);
+
         (*result).page = scan->id[indexNum].page;
         (*result).slot = scan->id[indexNum].slot;
         indexNum ++;
@@ -301,4 +309,3 @@ char *printTree (BTreeHandle *tree)
 {
     return RC_OK;
 }
-
