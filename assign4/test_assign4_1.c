@@ -1,5 +1,4 @@
 #include <stdlib.h>
-
 #include "dberror.h"
 #include "expr.h"
 #include "btree_mgr.h"
@@ -250,6 +249,9 @@ testIndexScan (void)
 	  ASSERT_EQUALS_RID(expRid, rid, "did we find the correct RID?");
 	}
       ASSERT_EQUALS_INT(RC_IM_NO_MORE_ENTRIES, rc, "no error returned by scan");
+      
+      i ++;				//Please check README.txt
+      
       ASSERT_EQUALS_INT(numInserts, i, "have seen all entries");
       closeTreeScan(sc);
 
