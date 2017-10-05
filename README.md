@@ -13,10 +13,12 @@
 ### - All assignments are implemented using C language.
 
 
-**Assignment 1 - Storage Manager:** Implemented a storage manager that allows read/writing of blocks to/from a file on disk.
 
-**Assignment 2 - Buffer Manager:** Implemented a buffer manager that manages a buffer of blocks in memory including reading/flushing to disk and block replacement (flushing blocks to disk to make space for reading new blocks from disk).
 
-**Assignment 3 - Record Manager:** Implemented a simple record manager that allows navigation through records, and inserting and deleting records.
+**[Assignment 1 - Storage Manager:](https://github.com/akash22gupta/CS-525-Advanced-Database-Organization/tree/master/assign1)** Implemented a storage manager that allows read/writing of blocks to/from a file on disk.
 
-**Assignment 4 - B+-Tree Index:** Implemented a disk-based B+-tree index structure.
+**[Assignment 2 - Buffer Manager:](https://github.com/akash22gupta/CS-525-Advanced-Database-Organization/tree/master/assign2)** Implemented a buffer manager that manages a buffer of blocks in memory including reading/flushing to disk and block replacement (flushing blocks to disk to make space for reading new blocks from disk).
+
+**[Assignment 3 - Record Manager:](https://github.com/akash22gupta/CS-525-Advanced-Database-Organization/tree/master/assign3)** Implemented a simple record manager that allows navigation through records, and inserting and deleting records.
+
+**[Assignment 4 - B+-Tree Index:](https://github.com/akash22gupta/CS-525-Advanced-Database-Organization/tree/master/assign4)** Implemented a disk-based B+-tree index structure.
