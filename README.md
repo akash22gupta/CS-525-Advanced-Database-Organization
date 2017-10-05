@@ -22,3 +22,10 @@
 **[Assignment 3 - Record Manager:](https://github.com/akash22gupta/CS-525-Advanced-Database-Organization/tree/master/assign3)** Implemented a simple record manager that allows navigation through records, and inserting and deleting records.
 
 **[Assignment 4 - B+-Tree Index:](https://github.com/akash22gupta/CS-525-Advanced-Database-Organization/tree/master/assign4)** Implemented a disk-based B+-tree index structure.
+
+
+## Authors
+
+* **[Akash Gupta (A20378676)](https://github.com/akash22gupta)**
+* **Snehita Kolapkar (A20389074)**
+* **Tanmay Pradhan (A20376280)**
