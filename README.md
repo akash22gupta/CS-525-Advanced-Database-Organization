@@ -1,4 +1,4 @@
-# Course Page- http://cs.iit.edu/~cs525/assignments.html
+# Course Page- [http://cs.iit.edu/~cs525/assignments.html](http://cs.iit.edu/~cs525/assignments.html)
 
 ### - These are several programming assignments done during Advanced Database Organization course.
 
