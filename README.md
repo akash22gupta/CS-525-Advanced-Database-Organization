@@ -26,6 +26,6 @@
 
 ## Authors
 
-* **[Akash Gupta (A20378676)](https://github.com/akash22gupta)**
-* **Snehita Kolapkar (A20389074)**
-* **Tanmay Pradhan (A20376280)**
+* **[Akash Gupta](https://github.com/akash22gupta)**
+* **Snehita Kolapkar**
+* **Tanmay Pradhan**
