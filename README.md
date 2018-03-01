@@ -27,5 +27,5 @@
 ## Authors
 
 * **[Akash Gupta](https://github.com/akash22gupta)**
-* **Snehita Kolapkar**
+* **[Snehita Kolapkar](https://github.com/snehitak24)**
 * **Tanmay Pradhan**
