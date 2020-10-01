@@ -12,6 +12,8 @@
 
 ### - All assignments are implemented using C language.
 
+### - We can also Implement using various other backend languages ex: Cpp, Python etc.
+
 
 
 
